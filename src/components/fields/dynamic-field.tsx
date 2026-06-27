@@ -84,6 +84,14 @@ function FieldControl({ def, name }: { def: FieldDefinition; name: string }) {
       );
     case "text":
     default:
-      return <Input id={name} name={name} required={def.required} />;
+      return (
+        <Input
+          id={name}
+          name={name}
+          type={def.is_sensitive ? "password" : "text"}
+          autoComplete={def.is_sensitive ? "new-password" : undefined}
+          required={def.required}
+        />
+      );
   }
 }
