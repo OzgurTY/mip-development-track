@@ -151,7 +151,7 @@ export default async function DashboardPage() {
           ) : (
             mostBehind.map((d) => (
               <Row key={d.customerId + (d.system ?? "")} href={`/musteriler/${d.customerId}`}>
-                <span className="truncate text-sm">
+                <span className="min-w-0 flex-1 truncate text-sm">
                   <span className="font-medium">{d.customerName}</span>
                   {d.system ? (
                     <span className="text-muted-foreground"> · {d.system}</span>
@@ -205,9 +205,9 @@ export default async function DashboardPage() {
         ) : (
           attention.map((a) => (
             <Row key={a.customerId} href={`/musteriler/${a.customerId}`}>
-              <span className="flex items-center gap-2 truncate text-sm font-medium">
+              <span className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium">
                 <Activity className="size-3.5 shrink-0 text-accent-amber" />
-                {a.customerName}
+                <span className="truncate">{a.customerName}</span>
               </span>
               <span className="shrink-0 text-xs text-muted-foreground">
                 {a.reason}
