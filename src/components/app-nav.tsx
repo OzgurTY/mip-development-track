@@ -17,6 +17,7 @@ export function AppNav({ role, name }: Props) {
   const items = [
     { href: "/", label: "Genel Bakış" },
     { href: "/musteriler", label: "Müşteriler" },
+    { href: "/takip", label: "Takip" },
     ...(role === "admin"
       ? [{ href: "/yonetim/alanlar", label: "Yönetim" }]
       : []),
