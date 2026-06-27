@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ListChecks } from "lucide-react";
 import { TrackEdit } from "./track-edit";
 import { StatusBadge } from "@/components/status-badge";
-import { Avatar } from "@/components/avatar";
 import { SearchInput } from "@/components/search-input";
 import { EmptyState } from "@/components/empty-state";
 import {
@@ -101,12 +100,9 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
                   <TableCell className="px-4 py-2.5">
                     <Link
                       href={`/musteriler/${row.customerId}`}
-                      className="press group flex items-center gap-3"
+                      className="font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
                     >
-                      <Avatar name={row.name} className="size-9 text-xs" />
-                      <span className="font-medium transition-colors group-hover:text-primary">
-                        {row.name}
-                      </span>
+                      {row.name}
                     </Link>
                   </TableCell>
                   <TableCell className="px-4">
@@ -117,16 +113,8 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
-                  <TableCell className="px-4">
-                    {row.record?.lead ? (
-                      <span className="flex items-center gap-2 text-sm">
-                        <Avatar
-                          name={row.record.lead}
-                          className="size-6 text-[0.6rem]"
-                        />
-                        {row.record.lead}
-                      </span>
-                    ) : (
+                  <TableCell className="px-4 text-sm">
+                    {row.record?.lead ?? (
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>

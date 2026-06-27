@@ -3,7 +3,6 @@
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DeleteCustomerButton } from "./delete-button";
-import { Avatar } from "@/components/avatar";
 import type { FieldDefinition } from "@/lib/fields/types";
 
 export type CustomerRow = {
@@ -31,12 +30,9 @@ export function buildColumns(
       cell: ({ row }) => (
         <Link
           href={`/musteriler/${row.original.id}`}
-          className="press group flex items-center gap-3"
+          className="font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
         >
-          <Avatar name={row.original.name} className="size-9 text-xs" />
-          <span className="font-medium transition-colors group-hover:text-primary">
-            {row.original.name}
-          </span>
+          {row.original.name}
         </Link>
       ),
     },

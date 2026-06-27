@@ -19,7 +19,7 @@ const TYPE_LABEL: Record<string, string> = {
   textarea: "Uzun metin",
   number: "Sayı",
   date: "Tarih",
-  boolean: "Evet/Hayır",
+  boolean: "Var/Yok",
   select: "Seçmeli",
   multiselect: "Çoklu seçmeli",
 };

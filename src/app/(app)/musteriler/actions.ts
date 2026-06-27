@@ -22,21 +22,12 @@ function collectCustomFields(
   return out;
 }
 
-export async function createCustomer(
-  _prev: CreateState,
-  formData: FormData,
-): Promise<CreateState> {
-  const parsed = customerInputSchema.safeParse({ name: formData.get("name") });
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Geçersiz giriş" };
-  }
-
+async function parseCustomFields(formData: FormData) {
   const defs = await getFieldDefinitions("customer");
   const raw = collectCustomFields(
     formData,
     defs.map((d) => d.key),
   );
-  // multiselect values arrive as a JSON string; decode before validating
   for (const def of defs) {
     if (def.type === "multiselect" && typeof raw[def.key] === "string") {
       try {
@@ -46,7 +37,22 @@ export async function createCustomer(
       }
     }
   }
-  const cfResult = buildCustomFieldsSchema(defs).safeParse(raw);
+  return buildCustomFieldsSchema(defs).safeParse(raw);
+}
+
+export async function createCustomer(
+  _prev: CreateState,
+  formData: FormData,
+): Promise<CreateState> {
+  const parsed = customerInputSchema.safeParse({
+    name: formData.get("name"),
+    is_active: formData.get("is_active") === "true",
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Geçersiz giriş" };
+  }
+
+  const cfResult = await parseCustomFields(formData);
   if (!cfResult.success) {
     return { error: cfResult.error.issues[0]?.message ?? "Özel alan geçersiz" };
   }
@@ -65,6 +71,45 @@ export async function createCustomer(
   }
 
   revalidatePath("/musteriler");
+  return { ok: true };
+}
+
+export async function updateCustomer(
+  id: string,
+  _prev: CreateState,
+  formData: FormData,
+): Promise<CreateState> {
+  const parsed = customerInputSchema.safeParse({
+    name: formData.get("name"),
+    is_active: formData.get("is_active") === "true",
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Geçersiz giriş" };
+  }
+
+  const cfResult = await parseCustomFields(formData);
+  if (!cfResult.success) {
+    return { error: cfResult.error.issues[0]?.message ?? "Özel alan geçersiz" };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("customers")
+    .update({
+      name: parsed.data.name,
+      is_active: parsed.data.is_active,
+      custom_fields: cfResult.data,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (error) {
+    return {
+      error: error.code === "23505" ? "Bu müşteri zaten var" : "Kayıt başarısız",
+    };
+  }
+
+  revalidatePath("/musteriler");
+  revalidatePath(`/musteriler/${id}`);
   return { ok: true };
 }
 

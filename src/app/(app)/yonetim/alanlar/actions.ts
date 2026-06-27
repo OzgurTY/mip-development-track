@@ -24,6 +24,18 @@ const fieldDefSchema = z.object({
 
 export type FieldDefState = { error: string } | { ok: true } | null;
 
+function revalidateModules() {
+  for (const p of [
+    "/yonetim/alanlar",
+    "/musteriler",
+    "/takip",
+    "/surumler",
+    "/altyapi",
+  ]) {
+    revalidatePath(p);
+  }
+}
+
 export async function createFieldDefinition(
   _prev: FieldDefState,
   formData: FormData,
@@ -64,8 +76,7 @@ export async function createFieldDefinition(
     };
   }
 
-  revalidatePath("/yonetim/alanlar");
-  revalidatePath("/musteriler");
+  revalidateModules();
   return { ok: true };
 }
 
@@ -78,7 +89,6 @@ export async function deleteFieldDefinition(
     .delete()
     .eq("id", id);
   if (error) return { error: "Silme başarısız" };
-  revalidatePath("/yonetim/alanlar");
-  revalidatePath("/musteriler");
+  revalidateModules();
   return {};
 }

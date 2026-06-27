@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Layers, TrendingDown, Clock } from "lucide-react";
+import { ChevronLeft, Layers, TrendingDown, Clock, Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCustomerDetail } from "@/lib/customers/detail";
 import { getInfraEntries } from "@/lib/infra/queries";
+import { getFieldDefinitions } from "@/lib/fields/queries";
 import { rowDrift } from "@/lib/dashboard/compute";
 import { CustomerDetailView } from "./customer-detail";
+import { CustomerDialog } from "../customer-dialog";
 import { StatusBadge } from "@/components/status-badge";
-import { Avatar } from "@/components/avatar";
 import type { InfraEntry } from "@/lib/infra/types";
 
 export default async function CustomerDetailPage({
@@ -29,7 +30,15 @@ export default async function CustomerDetailPage({
     .eq("id", user!.id)
     .single();
   const role = profile?.role ?? "viewer";
-  const showInfra = role === "admin" || role === "editor";
+  const canEdit = role === "admin" || role === "editor";
+  const showInfra = canEdit;
+
+  const [customerDefs, trackDefs, versionDefs, infraDefs] = await Promise.all([
+    getFieldDefinitions("customer"),
+    getFieldDefinitions("track"),
+    getFieldDefinitions("version"),
+    getFieldDefinitions("infra"),
+  ]);
   const infra: InfraEntry[] = showInfra ? await getInfraEntries(id) : [];
 
   const totalBehind = detail.versions.reduce(
@@ -52,19 +61,10 @@ export default async function CustomerDetailPage({
       </Link>
 
       <section className="bento relative overflow-hidden p-6">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "radial-gradient(420px 180px at 0% 0%, color-mix(in oklch, var(--accent-indigo) 12%, transparent), transparent)",
-          }}
-        />
         <div className="relative flex flex-wrap items-center gap-4">
-          <Avatar
-            name={detail.customer.name}
-            className="size-14 text-lg"
-          />
+          <span className="grid size-12 place-items-center rounded-2xl bg-muted text-muted-foreground">
+            <Building2 className="size-6" strokeWidth={2} />
+          </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="font-display text-2xl font-bold tracking-tight">
@@ -85,26 +85,29 @@ export default async function CustomerDetailPage({
             ) : null}
           </div>
 
-          <div className="ml-auto grid grid-cols-3 gap-2.5">
-            <HeroStat icon={Layers} label="Ortam" value={detail.versions.length} accent="var(--accent-sky)" />
-            <HeroStat
-              icon={TrendingDown}
-              label="Geride"
-              value={totalBehind}
-              accent="var(--accent-rose)"
-            />
-            <HeroStat
-              icon={Clock}
-              label="Son not"
-              value={lastUpdate ?? "-"}
-              accent="var(--accent-emerald)"
-              small={!!lastUpdate}
-            />
+          <div className="ml-auto flex items-center gap-2.5">
+            <div className="hidden gap-2.5 sm:flex">
+              <HeroStat icon={Layers} label="Ortam" value={detail.versions.length} accent="var(--accent-sky)" />
+              <HeroStat icon={TrendingDown} label="Geride" value={totalBehind} accent="var(--accent-rose)" />
+              <HeroStat icon={Clock} label="Son not" value={lastUpdate ?? "-"} accent="var(--accent-emerald)" small={!!lastUpdate} />
+            </div>
+            {canEdit ? (
+              <CustomerDialog customer={detail.customer} defs={customerDefs} />
+            ) : null}
           </div>
         </div>
       </section>
 
-      <CustomerDetailView detail={detail} infra={infra} showInfra={showInfra} />
+      <CustomerDetailView
+        detail={detail}
+        infra={infra}
+        showInfra={showInfra}
+        canEdit={canEdit}
+        canDelete={role === "admin"}
+        trackDefs={trackDefs}
+        versionDefs={versionDefs}
+        infraDefs={infraDefs}
+      />
     </div>
   );
 }
