@@ -10,10 +10,10 @@ import {
   ServerCog,
   Settings2,
   LogOut,
-  Boxes,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BrandMark } from "@/components/brand";
 import type { Role } from "@/lib/auth/roles";
 
 type Props = {
@@ -53,19 +53,9 @@ export function AppNav({ role, name }: Props) {
 
   return (
     <nav className="sticky top-0 flex h-dvh flex-col gap-1 border-r border-sidebar-border bg-sidebar p-3">
-      <div className="mb-3 flex items-center justify-between gap-2 px-1 pt-1">
-        <Link href="/" className="press flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-xl bg-gradient-to-br from-accent-indigo to-accent-violet text-white shadow-[0_4px_12px_-2px_var(--accent-indigo)]">
-            <Boxes className="size-5" strokeWidth={2.25} />
-          </span>
-          <span className="flex flex-col leading-tight">
-            <span className="font-display text-[0.95rem] font-bold tracking-tight">
-              MIP Track
-            </span>
-            <span className="text-[0.7rem] text-muted-foreground">
-              Development
-            </span>
-          </span>
+      <div className="mb-4 flex items-center justify-between gap-2 px-1 pt-1.5">
+        <Link href="/" className="press flex items-center" aria-label="Genel Bakış">
+          <BrandMark className="h-7 w-auto" />
         </Link>
         <ThemeToggle />
       </div>

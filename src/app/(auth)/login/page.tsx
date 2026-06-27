@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { Boxes } from "lucide-react";
 import { login, type LoginState } from "./actions";
+import { BrandLogo } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,16 +25,11 @@ export default function LoginPage() {
       />
 
       <div className="bento animate-in fade-in zoom-in-95 relative w-full max-w-sm p-7 duration-500">
-        <div className="mb-6 flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-2xl bg-gradient-to-br from-accent-indigo to-accent-violet text-white shadow-[0_8px_20px_-6px_var(--accent-indigo)]">
-            <Boxes className="size-6" strokeWidth={2.25} />
-          </span>
-          <div className="leading-tight">
-            <h1 className="font-display text-lg font-bold tracking-tight">
-              MIP Track
-            </h1>
-            <p className="text-sm text-muted-foreground">Development Track</p>
-          </div>
+        <div className="mb-7 flex flex-col items-center gap-2.5 text-center">
+          <BrandLogo className="h-12 w-auto" />
+          <p className="text-sm text-muted-foreground">
+            Development Track giriş
+          </p>
         </div>
 
         <form action={action} className="space-y-4">

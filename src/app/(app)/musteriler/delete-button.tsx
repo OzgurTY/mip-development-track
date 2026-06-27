@@ -2,8 +2,8 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { deleteCustomer } from "./actions";
-import { Button } from "@/components/ui/button";
 
 type Props = {
   id: string;
@@ -23,15 +23,14 @@ export function DeleteCustomerButton({ id, name }: Props) {
   }
 
   return (
-    <Button
+    <button
       type="button"
-      variant="ghost"
-      size="sm"
       onClick={handleDelete}
       disabled={pending}
-      className="text-destructive hover:text-destructive"
+      aria-label={`${name} sil`}
+      className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
     >
-      Sil
-    </Button>
+      <Trash2 className="size-4" />
+    </button>
   );
 }

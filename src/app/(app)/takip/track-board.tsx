@@ -1,8 +1,13 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
+import { ListChecks } from "lucide-react";
 import { TrackEdit } from "./track-edit";
 import { StatusBadge } from "@/components/status-badge";
+import { Avatar } from "@/components/avatar";
+import { SearchInput } from "@/components/search-input";
+import { EmptyState } from "@/components/empty-state";
 import {
   Table,
   TableBody,
@@ -11,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { BoardRow } from "@/lib/track/types";
+import { TRACK_STATUSES, type BoardRow } from "@/lib/track/types";
 import type { FieldDefinition } from "@/lib/fields/types";
 
 type Props = {
@@ -21,52 +26,157 @@ type Props = {
 };
 
 export function TrackBoard({ rows, defs, canEdit }: Props) {
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<string | null>(null);
+
+  const counts = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const r of rows) {
+      const s = r.record?.status ?? "";
+      if (s) m[s] = (m[s] ?? 0) + 1;
+    }
+    return m;
+  }, [rows]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLocaleLowerCase("tr");
+    return rows.filter((r) => {
+      if (status && r.record?.status !== status) return false;
+      if (!q) return true;
+      return (
+        r.name.toLocaleLowerCase("tr").includes(q) ||
+        (r.record?.project ?? "").toLocaleLowerCase("tr").includes(q) ||
+        (r.record?.lead ?? "").toLocaleLowerCase("tr").includes(q)
+      );
+    });
+  }, [rows, query, status]);
+
   return (
-    <div className="bento overflow-hidden">
-      <Table>
-        <TableHeader className="bg-muted/40">
-          <TableRow className="hover:bg-transparent [&_th]:h-11 [&_th]:px-4 [&_th]:text-xs [&_th]:font-semibold [&_th]:tracking-wide [&_th]:text-muted-foreground [&_th]:uppercase">
-            <TableHead>Müşteri</TableHead>
-            <TableHead>Durum</TableHead>
-            <TableHead>Proje</TableHead>
-            <TableHead>Lead</TableHead>
-            <TableHead>Son güncelleme</TableHead>
-            {canEdit && <TableHead />}
-          </TableRow>
-        </TableHeader>
-        <TableBody className="[&_td]:px-4 [&_td]:py-3 [&_tr]:hover:bg-accent/60">
-          {rows.map((row) => (
-            <TableRow key={row.customerId}>
-              <TableCell>
-                <Link
-                  href={`/musteriler/${row.customerId}`}
-                  className="font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  {row.name}
-                </Link>
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={row.record?.status ?? null} />
-              </TableCell>
-              <TableCell>{row.record?.project ?? ""}</TableCell>
-              <TableCell>{row.record?.lead ?? ""}</TableCell>
-              <TableCell className="max-w-[28rem] truncate text-muted-foreground">
-                {row.lastUpdate ? row.lastUpdate.body : ""}
-              </TableCell>
-              {canEdit && (
-                <TableCell className="text-right">
-                  <TrackEdit
-                    customerId={row.customerId}
-                    name={row.name}
-                    record={row.record}
-                    defs={defs}
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="Müşteri, proje, lead ara..."
+          className="w-full max-w-xs"
+        />
+        <div className="flex flex-wrap gap-1.5">
+          <Chip active={status === null} onClick={() => setStatus(null)}>
+            Tümü <Count>{rows.length}</Count>
+          </Chip>
+          {TRACK_STATUSES.map((s) => (
+            <Chip key={s} active={status === s} onClick={() => setStatus(s)}>
+              {s} <Count>{counts[s] ?? 0}</Count>
+            </Chip>
+          ))}
+        </div>
+      </div>
+
+      <div className="bento overflow-hidden">
+        <Table>
+          <TableHeader className="bg-muted/40">
+            <TableRow className="hover:bg-transparent [&_th]:h-11 [&_th]:px-4 [&_th]:text-xs [&_th]:font-semibold [&_th]:tracking-wide [&_th]:text-muted-foreground [&_th]:uppercase">
+              <TableHead>Müşteri</TableHead>
+              <TableHead>Durum</TableHead>
+              <TableHead>Proje</TableHead>
+              <TableHead>Lead</TableHead>
+              <TableHead>Son güncelleme</TableHead>
+              {canEdit && <TableHead />}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.length === 0 ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={canEdit ? 6 : 5} className="p-0">
+                  <EmptyState
+                    icon={ListChecks}
+                    title="Eşleşen kayıt yok"
+                    description="Filtre veya aramayı değiştir."
                   />
                 </TableCell>
-              )}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+              </TableRow>
+            ) : (
+              filtered.map((row) => (
+                <TableRow key={row.customerId} className="hover:bg-accent/60">
+                  <TableCell className="px-4 py-2.5">
+                    <Link
+                      href={`/musteriler/${row.customerId}`}
+                      className="press group flex items-center gap-3"
+                    >
+                      <Avatar name={row.name} className="size-9 text-xs" />
+                      <span className="font-medium transition-colors group-hover:text-primary">
+                        {row.name}
+                      </span>
+                    </Link>
+                  </TableCell>
+                  <TableCell className="px-4">
+                    <StatusBadge status={row.record?.status ?? null} />
+                  </TableCell>
+                  <TableCell className="px-4 text-sm">
+                    {row.record?.project ?? (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="px-4">
+                    {row.record?.lead ? (
+                      <span className="flex items-center gap-2 text-sm">
+                        <Avatar
+                          name={row.record.lead}
+                          className="size-6 text-[0.6rem]"
+                        />
+                        {row.record.lead}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="max-w-[24rem] truncate px-4 text-sm text-muted-foreground">
+                    {row.lastUpdate ? row.lastUpdate.body : "-"}
+                  </TableCell>
+                  {canEdit && (
+                    <TableCell className="px-4 text-right">
+                      <TrackEdit
+                        customerId={row.customerId}
+                        name={row.name}
+                        record={row.record}
+                        defs={defs}
+                      />
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
+}
+
+function Chip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        active
+          ? "press inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground"
+          : "press inline-flex items-center gap-1.5 rounded-full bg-card px-3 py-1.5 text-sm text-muted-foreground ring-1 ring-foreground/[0.06] transition-colors hover:text-foreground"
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function Count({ children }: { children: React.ReactNode }) {
+  return <span className="text-xs opacity-70 tabular-nums">{children}</span>;
 }

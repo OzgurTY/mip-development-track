@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DeleteCustomerButton } from "./delete-button";
+import { Avatar } from "@/components/avatar";
 import type { FieldDefinition } from "@/lib/fields/types";
 
 export type CustomerRow = {
@@ -30,9 +31,12 @@ export function buildColumns(
       cell: ({ row }) => (
         <Link
           href={`/musteriler/${row.original.id}`}
-          className="font-medium text-primary underline-offset-4 hover:underline"
+          className="press group flex items-center gap-3"
         >
-          {row.original.name}
+          <Avatar name={row.original.name} className="size-9 text-xs" />
+          <span className="font-medium transition-colors group-hover:text-primary">
+            {row.original.name}
+          </span>
         </Link>
       ),
     },
@@ -41,9 +45,15 @@ export function buildColumns(
       header: "Durum",
       cell: ({ row }) =>
         row.original.is_active ? (
-          <span className="text-foreground">Aktif</span>
+          <span className="inline-flex items-center gap-1.5 text-sm">
+            <span className="size-1.5 rounded-full bg-accent-emerald" />
+            Aktif
+          </span>
         ) : (
-          <span className="text-muted-foreground">Pasif</span>
+          <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+            <span className="size-1.5 rounded-full bg-muted-foreground/40" />
+            Pasif
+          </span>
         ),
     },
   ];
