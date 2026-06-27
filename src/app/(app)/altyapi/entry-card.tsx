@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { deleteInfraEntry } from "@/lib/infra/actions";
+import {
+  uploadAttachment,
+  deleteAttachment,
+  type UploadState,
+} from "@/lib/infra/attachment-actions";
 import { Button } from "@/components/ui/button";
 import { INFRA_TYPES, type InfraEntry } from "@/lib/infra/types";
 
@@ -17,10 +22,29 @@ export function EntryCard({
 }) {
   const router = useRouter();
   const [shown, setShown] = useState<Record<string, boolean>>({});
+  const formRef = useRef<HTMLFormElement>(null);
+  const upload = uploadAttachment.bind(null, entry.id);
+  const [upState, uploadAction, uploading] = useActionState<
+    UploadState,
+    FormData
+  >(upload, null);
 
-  async function remove() {
+  useEffect(() => {
+    if (upState && "ok" in upState && upState.ok) {
+      formRef.current?.reset();
+      router.refresh();
+    }
+  }, [upState, router]);
+
+  async function removeEntry() {
     if (!window.confirm(`"${entry.label}" silinsin mi?`)) return;
     await deleteInfraEntry(entry.id);
+    router.refresh();
+  }
+
+  async function removeAttachment(id: string, name: string) {
+    if (!window.confirm(`"${name}" eki silinsin mi?`)) return;
+    await deleteAttachment(id);
     router.refresh();
   }
 
@@ -37,13 +61,14 @@ export function EntryCard({
           <Button
             variant="ghost"
             size="sm"
-            onClick={remove}
+            onClick={removeEntry}
             className="text-destructive hover:text-destructive"
           >
             Sil
           </Button>
         )}
       </header>
+
       {entry.fields.length > 0 && (
         <dl className="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-1 text-sm">
           {entry.fields.map((f) => (
@@ -71,9 +96,63 @@ export function EntryCard({
           ))}
         </dl>
       )}
+
       {entry.notes && (
         <p className="text-sm whitespace-pre-wrap">{entry.notes}</p>
       )}
+
+      <div className="space-y-2 border-t pt-3">
+        <p className="text-xs font-medium text-muted-foreground">Dosyalar</p>
+        {entry.attachments.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Ek yok.</p>
+        ) : (
+          <ul className="space-y-1">
+            {entry.attachments.map((a) => (
+              <li key={a.id} className="flex items-center gap-2 text-sm">
+                {a.url ? (
+                  <a
+                    href={a.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline"
+                  >
+                    {a.name}
+                  </a>
+                ) : (
+                  <span>{a.name}</span>
+                )}
+                {canDelete && (
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(a.id, a.name)}
+                    className="text-xs text-destructive underline"
+                  >
+                    sil
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+        <form
+          ref={formRef}
+          action={uploadAction}
+          className="flex items-center gap-2"
+        >
+          <input
+            type="file"
+            name="file"
+            aria-label={`${entry.label} dosya`}
+            className="text-xs"
+          />
+          <Button type="submit" size="sm" variant="outline" disabled={uploading}>
+            {uploading ? "Yükleniyor..." : "Yükle"}
+          </Button>
+        </form>
+        {upState && "error" in upState && (
+          <p className="text-xs text-destructive">{upState.error}</p>
+        )}
+      </div>
     </section>
   );
 }
