@@ -12,13 +12,20 @@ export function ThemeToggle() {
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
-  const isDark = resolvedTheme === "dark";
+  // Until mounted, the theme is unknown on both server and first client render,
+  // so keep everything theme-independent to avoid a hydration mismatch.
+  const isDark = mounted && resolvedTheme === "dark";
+  const label = !mounted
+    ? "Tema değiştir"
+    : isDark
+      ? "Açık temaya geç"
+      : "Koyu temaya geç";
 
   return (
     <button
       type="button"
-      aria-label={isDark ? "Açık temaya geç" : "Koyu temaya geç"}
-      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label={label}
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       className="press relative grid size-9 place-items-center rounded-xl text-muted-foreground ring-1 ring-foreground/[0.06] transition-colors hover:bg-sidebar-accent hover:text-foreground"
     >
       {/* Cross-fade icons (skill: contextual icon animation, no motion lib). */}
