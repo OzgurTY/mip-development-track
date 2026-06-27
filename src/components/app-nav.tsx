@@ -18,6 +18,7 @@ export function AppNav({ role, name }: Props) {
     { href: "/", label: "Genel Bakış" },
     { href: "/musteriler", label: "Müşteriler" },
     { href: "/takip", label: "Takip" },
+    { href: "/surumler", label: "Sürümler" },
     ...(role === "admin"
       ? [{ href: "/yonetim/alanlar", label: "Yönetim" }]
       : []),
