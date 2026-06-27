@@ -13,6 +13,12 @@ export type InfraField = {
   sensitive: boolean;
 };
 
+export type Attachment = {
+  id: string;
+  name: string;
+  url: string | null;
+};
+
 export type InfraEntry = {
   id: string;
   customer_id: string;
@@ -20,4 +26,5 @@ export type InfraEntry = {
   label: string;
   notes: string | null;
   fields: InfraField[];
+  attachments: Attachment[];
 };

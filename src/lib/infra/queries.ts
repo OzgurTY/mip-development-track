@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
 import { decrypt, isEncrypted } from "@/lib/crypto/secret";
-import type { InfraEntry, InfraField } from "./types";
+import type { Attachment, InfraEntry, InfraField } from "./types";
 
 export async function getInfraEntries(
   customerId: string,
@@ -16,7 +16,7 @@ export async function getInfraEntries(
       .order("created_at", { ascending: false }),
   ]);
 
-  return (rows.data ?? []).map((row) => {
+  const entries: InfraEntry[] = (rows.data ?? []).map((row) => {
     const stored = (row.fields ?? {}) as Record<string, unknown>;
     const fields: InfraField[] = defs
       .filter((d) => stored[d.key] !== undefined && stored[d.key] !== null)
@@ -41,6 +41,39 @@ export async function getInfraEntries(
       label: row.label,
       notes: row.notes,
       fields,
+      attachments: [],
     };
   });
+
+  const entryIds = entries.map((e) => e.id);
+  if (entryIds.length > 0) {
+    const { data: atts } = await supabase
+      .from("infra_attachments")
+      .select("id, entry_id, file_path, file_name")
+      .in("entry_id", entryIds);
+
+    const paths = (atts ?? []).map((a) => a.file_path);
+    const signed = paths.length
+      ? ((await supabase.storage.from("infra-files").createSignedUrls(paths, 3600))
+          .data ?? [])
+      : [];
+    const urlByPath = new Map<string, string>();
+    signed.forEach((s) => {
+      if (s.path && s.signedUrl) urlByPath.set(s.path, s.signedUrl);
+    });
+
+    const byEntry = new Map<string, Attachment[]>();
+    for (const a of atts ?? []) {
+      const list = byEntry.get(a.entry_id) ?? [];
+      list.push({
+        id: a.id,
+        name: a.file_name,
+        url: urlByPath.get(a.file_path) ?? null,
+      });
+      byEntry.set(a.entry_id, list);
+    }
+    for (const e of entries) e.attachments = byEntry.get(e.id) ?? [];
+  }
+
+  return entries;
 }
