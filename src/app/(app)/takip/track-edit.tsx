@@ -45,7 +45,7 @@ export function TrackEdit({ customerId, name, record, defs }: Props) {
           </Button>
         }
       />
-      <DialogContent>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{name}</DialogTitle>
         </DialogHeader>

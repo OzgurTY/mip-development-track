@@ -29,7 +29,7 @@ export function CustomerForm({ defs }: { defs: FieldDefinition[] }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button>Yeni müşteri</Button>} />
-      <DialogContent>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Yeni müşteri</DialogTitle>
         </DialogHeader>
