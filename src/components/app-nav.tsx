@@ -5,11 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import type { Role } from "@/lib/auth/roles";
 
-const ITEMS = [
-  { href: "/", label: "Genel Bakış" },
-  { href: "/musteriler", label: "Müşteriler" },
-];
-
 type Props = {
   role: Role;
   name: string;
@@ -18,6 +13,14 @@ type Props = {
 export function AppNav({ role, name }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+
+  const items = [
+    { href: "/", label: "Genel Bakış" },
+    { href: "/musteriler", label: "Müşteriler" },
+    ...(role === "admin"
+      ? [{ href: "/yonetim/alanlar", label: "Yönetim" }]
+      : []),
+  ];
 
   async function handleSignOut() {
     await createClient().auth.signOut();
@@ -32,7 +35,7 @@ export function AppNav({ role, name }: Props) {
           {name} · {role}
         </p>
       </div>
-      {ITEMS.map((item) => {
+      {items.map((item) => {
         const isActive = pathname === item.href;
         return (
           <Link
