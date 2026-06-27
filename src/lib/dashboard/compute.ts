@@ -47,6 +47,36 @@ export function rankMostBehind(
     .slice(0, limit);
 }
 
+export type ComponentBreakdown = {
+  key: string;
+  label: string;
+  behind: number;
+  current: number;
+  unknown: number;
+};
+
+export function componentBreakdown(
+  matrix: MatrixRow[],
+  components: ComponentLatest[],
+): ComponentBreakdown[] {
+  return components.map((c) => {
+    let behind = 0;
+    let current = 0;
+    let unknown = 0;
+    for (const r of matrix) {
+      const st = compareVersion(
+        String(r.custom_fields?.[c.key] ?? ""),
+        c.latest_version,
+        c.kind,
+      );
+      if (st === "behind") behind++;
+      else if (st === "current" || st === "ahead") current++;
+      else unknown++;
+    }
+    return { key: c.key, label: c.label, behind, current, unknown };
+  });
+}
+
 export type StatusCounts = {
   total: number;
   active: number;

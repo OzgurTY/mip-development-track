@@ -2,10 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import { getTrackBoard } from "@/lib/track/queries";
 import { getComponentLatest, getVersionMatrix } from "@/lib/versions/queries";
 import {
+  componentBreakdown,
   pickAttention,
   rankMostBehind,
   statusCounts,
   type AttentionItem,
+  type ComponentBreakdown,
   type InstallDrift,
   type StatusCounts,
 } from "./compute";
@@ -49,6 +51,8 @@ export type Overview = {
   mostBehind: InstallDrift[];
   attention: AttentionItem[];
   recent: RecentUpdate[];
+  components: ComponentBreakdown[];
+  versionCount: number;
 };
 
 export async function getOverview(): Promise<Overview> {
@@ -63,5 +67,7 @@ export async function getOverview(): Promise<Overview> {
     mostBehind: rankMostBehind(matrix, components, 6),
     attention: pickAttention(board, matrix, components, 8),
     recent,
+    components: componentBreakdown(matrix, components),
+    versionCount: matrix.length,
   };
 }

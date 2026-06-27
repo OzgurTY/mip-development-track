@@ -21,9 +21,11 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const name = profile?.full_name ?? user.email ?? "";
 
   return (
-    <div className="grid min-h-dvh grid-cols-[240px_1fr]">
+    <div className="grid min-h-dvh grid-cols-[256px_1fr] bg-background">
       <AppNav role={role} name={name} />
-      <main className="p-8">{children}</main>
+      <main className="min-w-0 px-6 py-8 md:px-10 md:py-10">
+        <div className="mx-auto w-full max-w-[1400px]">{children}</div>
+      </main>
     </div>
   );
 }

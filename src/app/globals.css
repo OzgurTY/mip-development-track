@@ -5,48 +5,133 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design direction: light, corporate-clean, single disciplined blue accent.
- * No automatic dark mode (dark requires an explicit .dark class, which v1 does not set).
- * Accent is wired into shadcn's --primary / --ring so all components stay on-brand.
+ * MIP Development Track - "Vibrant bento" design language.
+ * Soft surfaces, rounded bento tiles, a disciplined multi-accent palette,
+ * layered shadows over hard borders, light + dark via next-themes (.dark class).
+ * Playfulness lives in color, shape and motion - never in decorative emoji.
  */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.22 0.01 250);
+  --radius: 0.9rem;
+
+  --background: oklch(0.98 0.005 264);
+  --foreground: oklch(0.21 0.02 266);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.01 250);
+  --card-foreground: oklch(0.21 0.02 266);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.01 250);
-  --primary: oklch(0.55 0.16 255);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0.004 250);
-  --secondary-foreground: oklch(0.25 0.01 250);
-  --muted: oklch(0.97 0.004 250);
-  --muted-foreground: oklch(0.52 0.01 250);
-  --accent: oklch(0.97 0.004 250);
-  --accent-foreground: oklch(0.25 0.01 250);
-  --destructive: oklch(0.55 0.18 25);
-  --border: oklch(0.91 0.005 250);
-  --input: oklch(0.91 0.005 250);
-  --ring: oklch(0.55 0.16 255);
-  --chart-1: oklch(0.55 0.16 255);
-  --chart-2: oklch(0.62 0.13 200);
-  --chart-3: oklch(0.65 0.14 145);
-  --chart-4: oklch(0.7 0.15 80);
-  --chart-5: oklch(0.62 0.2 25);
-  --sidebar: oklch(0.975 0.004 250);
-  --sidebar-foreground: oklch(0.22 0.01 250);
-  --sidebar-primary: oklch(0.55 0.16 255);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.95 0.004 250);
-  --sidebar-accent-foreground: oklch(0.25 0.01 250);
-  --sidebar-border: oklch(0.91 0.005 250);
-  --sidebar-ring: oklch(0.55 0.16 255);
+  --popover-foreground: oklch(0.21 0.02 266);
+
+  --primary: oklch(0.55 0.2 277);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.965 0.006 264);
+  --secondary-foreground: oklch(0.28 0.02 266);
+  --muted: oklch(0.965 0.006 264);
+  --muted-foreground: oklch(0.52 0.02 266);
+  --accent: oklch(0.96 0.012 277);
+  --accent-foreground: oklch(0.3 0.05 277);
+  --destructive: oklch(0.58 0.22 18);
+  --success: oklch(0.62 0.15 162);
+  --warning: oklch(0.74 0.15 70);
+
+  --border: oklch(0.91 0.006 264);
+  --input: oklch(0.91 0.006 264);
+  --ring: oklch(0.55 0.2 277);
+
+  /* Bento tile accent ramp - each KPI / chart series gets its own hue. */
+  --accent-indigo: oklch(0.55 0.2 277);
+  --accent-violet: oklch(0.57 0.22 305);
+  --accent-emerald: oklch(0.64 0.15 162);
+  --accent-amber: oklch(0.76 0.15 70);
+  --accent-rose: oklch(0.63 0.22 12);
+  --accent-sky: oklch(0.66 0.14 234);
+
+  --chart-1: var(--accent-indigo);
+  --chart-2: var(--accent-emerald);
+  --chart-3: var(--accent-amber);
+  --chart-4: var(--accent-rose);
+  --chart-5: var(--accent-sky);
+  --chart-6: var(--accent-violet);
+
+  --sidebar: oklch(0.99 0.003 264);
+  --sidebar-foreground: oklch(0.21 0.02 266);
+  --sidebar-primary: oklch(0.55 0.2 277);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.96 0.012 277);
+  --sidebar-accent-foreground: oklch(0.3 0.05 277);
+  --sidebar-border: oklch(0.92 0.006 264);
+  --sidebar-ring: oklch(0.55 0.2 277);
+
+  /* Layered shadows (skill: shadows over borders). */
+  --shadow-soft:
+    0 1px 2px -1px oklch(0.21 0.02 266 / 0.08),
+    0 2px 6px -2px oklch(0.21 0.02 266 / 0.08);
+  --shadow-card:
+    0 1px 2px -1px oklch(0.21 0.02 266 / 0.06),
+    0 4px 14px -4px oklch(0.21 0.02 266 / 0.1);
+  --shadow-lift:
+    0 2px 4px -2px oklch(0.21 0.02 266 / 0.1),
+    0 12px 28px -8px oklch(0.21 0.02 266 / 0.18);
+}
+
+.dark {
+  --background: oklch(0.17 0.016 274);
+  --foreground: oklch(0.95 0.005 264);
+  --card: oklch(0.215 0.019 274);
+  --card-foreground: oklch(0.95 0.005 264);
+  --popover: oklch(0.215 0.019 274);
+  --popover-foreground: oklch(0.95 0.005 264);
+
+  --primary: oklch(0.67 0.18 277);
+  --primary-foreground: oklch(0.16 0.02 274);
+  --secondary: oklch(0.26 0.02 274);
+  --secondary-foreground: oklch(0.92 0.01 264);
+  --muted: oklch(0.26 0.02 274);
+  --muted-foreground: oklch(0.68 0.02 266);
+  --accent: oklch(0.3 0.04 277);
+  --accent-foreground: oklch(0.92 0.02 277);
+  --destructive: oklch(0.7 0.19 18);
+  --success: oklch(0.72 0.15 162);
+  --warning: oklch(0.8 0.15 75);
+
+  --border: oklch(0.3 0.016 274);
+  --input: oklch(0.32 0.016 274);
+  --ring: oklch(0.67 0.18 277);
+
+  --accent-indigo: oklch(0.68 0.18 277);
+  --accent-violet: oklch(0.7 0.19 305);
+  --accent-emerald: oklch(0.74 0.15 162);
+  --accent-amber: oklch(0.82 0.15 75);
+  --accent-rose: oklch(0.72 0.19 12);
+  --accent-sky: oklch(0.74 0.14 234);
+
+  --chart-1: var(--accent-indigo);
+  --chart-2: var(--accent-emerald);
+  --chart-3: var(--accent-amber);
+  --chart-4: var(--accent-rose);
+  --chart-5: var(--accent-sky);
+  --chart-6: var(--accent-violet);
+
+  --sidebar: oklch(0.2 0.018 274);
+  --sidebar-foreground: oklch(0.95 0.005 264);
+  --sidebar-primary: oklch(0.67 0.18 277);
+  --sidebar-primary-foreground: oklch(0.16 0.02 274);
+  --sidebar-accent: oklch(0.3 0.04 277);
+  --sidebar-accent-foreground: oklch(0.92 0.02 277);
+  --sidebar-border: oklch(0.3 0.016 274);
+  --sidebar-ring: oklch(0.67 0.18 277);
+
+  --shadow-soft:
+    0 1px 2px -1px oklch(0 0 0 / 0.4), 0 2px 6px -2px oklch(0 0 0 / 0.4);
+  --shadow-card:
+    0 1px 2px -1px oklch(0 0 0 / 0.45), 0 6px 18px -6px oklch(0 0 0 / 0.5);
+  --shadow-lift:
+    0 2px 4px -2px oklch(0 0 0 / 0.5), 0 16px 36px -10px oklch(0 0 0 / 0.6);
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-bricolage);
   --font-mono: var(--font-geist-mono);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -62,14 +147,26 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-accent-indigo: var(--accent-indigo);
+  --color-accent-violet: var(--accent-violet);
+  --color-accent-emerald: var(--accent-emerald);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-rose: var(--accent-rose);
+  --color-accent-sky: var(--accent-sky);
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -78,22 +175,61 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+  --radius-3xl: calc(var(--radius) + 18px);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
   body {
     @apply bg-background text-foreground;
     /* tabular numbers so version and data columns align */
     font-feature-settings: "tnum" 1;
   }
-  html {
-    @apply font-sans;
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer components {
+  /* Bento surface: layered shadow, soft ring, subtle hover lift. */
+  .bento {
+    @apply rounded-3xl bg-card text-card-foreground ring-1 ring-foreground/[0.06];
+    box-shadow: var(--shadow-card);
+  }
+  .bento-hover {
+    transition-property: transform, box-shadow;
+    transition-duration: 220ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+  .bento-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+  /* Tactile press feedback for clickable surfaces. */
+  .press {
+    transition-property: transform;
+    transition-duration: 120ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+  .press:active {
+    transform: scale(0.96);
   }
 }
