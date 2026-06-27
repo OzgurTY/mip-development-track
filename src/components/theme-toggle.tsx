@@ -7,6 +7,9 @@ import { Moon, Sun } from "lucide-react";
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  // next-themes hydration guard: theme is unknown on the server, so we render
+  // the resolved icon only after mount to avoid a hydration mismatch.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   const isDark = resolvedTheme === "dark";

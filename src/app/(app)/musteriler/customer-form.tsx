@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import { createCustomer, type CreateState } from "./actions";
 import { DynamicFields } from "@/components/fields/dynamic-fields";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,14 @@ export function CustomerForm({ defs }: { defs: FieldDefinition[] }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button>Yeni müşteri</Button>} />
+      <DialogTrigger
+        render={
+          <Button size="lg" className="press h-10 gap-2">
+            <Plus className="size-4" />
+            Yeni müşteri
+          </Button>
+        }
+      />
       <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Yeni müşteri</DialogTitle>

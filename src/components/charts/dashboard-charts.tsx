@@ -134,7 +134,7 @@ export function ComponentBars({ data }: { data: ComponentBarRow[] }) {
             dataKey="unknown"
             stackId="a"
             name="Kurulu değil"
-            fill="var(--muted)"
+            fill="color-mix(in oklch, var(--foreground) 14%, transparent)"
             radius={[0, 6, 6, 0]}
           />
         </BarChart>

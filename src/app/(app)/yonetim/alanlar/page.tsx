@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
+import { PageHeader } from "@/components/page-header";
 import { FieldForm } from "./field-form";
 import { FieldList } from "./field-list";
 
@@ -20,15 +21,12 @@ export default async function FieldAdminPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Müşteri Alanları</h1>
-          <p className="text-sm text-muted-foreground">
-            Müşteri kayıtlarına eklenecek özel alanlar
-          </p>
-        </div>
+      <PageHeader
+        title="Müşteri Alanları"
+        subtitle="Müşteri kayıtlarına eklenecek özel alanlar"
+      >
         <FieldForm entity="customer" />
-      </div>
+      </PageHeader>
       <FieldList defs={defs} />
     </div>
   );

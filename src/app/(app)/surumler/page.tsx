@@ -1,6 +1,8 @@
+import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
 import { getVersionMatrix, getComponentLatest } from "@/lib/versions/queries";
+import { PageHeader } from "@/components/page-header";
 import { VersionMatrix } from "./version-matrix";
 import { VersionEdit } from "./version-edit";
 import { LatestPanel } from "./latest-panel";
@@ -28,23 +30,25 @@ export default async function VersionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Sürüm Envanteri</h1>
-          <p className="text-sm text-muted-foreground">
-            {rows.length} kurulum, güncele göre renklendirilmiş
-          </p>
-        </div>
+      <PageHeader
+        title="Sürüm Envanteri"
+        subtitle={`${rows.length} kurulum, güncele göre renklendirilmiş`}
+      >
         {canEdit && firstCustomer && (
           <VersionEdit
             customerId={firstCustomer.id}
             customerName={firstCustomer.name}
             record={null}
             defs={defs}
-            trigger={<Button>Yeni kayıt</Button>}
+            trigger={
+              <Button size="lg" className="press h-10 gap-2">
+                <Plus className="size-4" />
+                Yeni kayıt
+              </Button>
+            }
           />
         )}
-      </div>
+      </PageHeader>
       {isAdmin && <LatestPanel components={components} />}
       <VersionMatrix
         rows={rows}

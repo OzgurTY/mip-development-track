@@ -106,7 +106,10 @@ export default async function DashboardPage() {
                 items={[
                   { label: "Güncel", color: "var(--accent-emerald)" },
                   { label: "Geride", color: "var(--accent-rose)" },
-                  { label: "Kurulu değil", color: "var(--muted)" },
+                  {
+                    label: "Kurulu değil",
+                    color: "color-mix(in oklch, var(--foreground) 14%, transparent)",
+                  },
                 ]}
               />
             </>

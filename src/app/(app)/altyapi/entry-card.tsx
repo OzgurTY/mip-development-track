@@ -2,6 +2,19 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Server,
+  Network,
+  KeyRound,
+  Cog,
+  ShieldEllipsis,
+  Eye,
+  EyeOff,
+  Trash2,
+  Paperclip,
+  Upload,
+  X,
+} from "lucide-react";
 import { deleteInfraEntry } from "@/lib/infra/actions";
 import {
   uploadAttachment,
@@ -10,8 +23,16 @@ import {
 } from "@/lib/infra/attachment-actions";
 import { Button } from "@/components/ui/button";
 import { INFRA_TYPES, type InfraEntry } from "@/lib/infra/types";
+import type { LucideIcon } from "lucide-react";
 
 const TYPE_LABEL: Record<string, string> = Object.fromEntries(INFRA_TYPES);
+const TYPE_ICON: Record<string, LucideIcon> = {
+  sunucu: Server,
+  mip: Cog,
+  baglanti: Network,
+  vpn: ShieldEllipsis,
+  diger: KeyRound,
+};
 
 export function EntryCard({
   entry,
@@ -48,37 +69,44 @@ export function EntryCard({
     router.refresh();
   }
 
+  const Icon = TYPE_ICON[entry.type] ?? KeyRound;
+
   return (
-    <section className="space-y-3 rounded-lg border p-4">
-      <header className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold">{entry.label}</h3>
-          <p className="text-xs text-muted-foreground">
-            {TYPE_LABEL[entry.type] ?? entry.type}
-          </p>
+    <section className="bento bento-hover p-5">
+      <header className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-2xl bg-accent text-primary">
+            <Icon className="size-5" strokeWidth={2.25} />
+          </span>
+          <div>
+            <h3 className="font-semibold">{entry.label}</h3>
+            <p className="text-xs text-muted-foreground">
+              {TYPE_LABEL[entry.type] ?? entry.type}
+            </p>
+          </div>
         </div>
         {canDelete && (
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
             onClick={removeEntry}
-            className="text-destructive hover:text-destructive"
+            aria-label="Kaydı sil"
+            className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
           >
-            Sil
-          </Button>
+            <Trash2 className="size-4" />
+          </button>
         )}
       </header>
 
       {entry.fields.length > 0 && (
-        <dl className="grid grid-cols-[10rem_1fr] gap-x-4 gap-y-1 text-sm">
+        <dl className="mt-4 grid grid-cols-[9rem_1fr] gap-x-4 gap-y-1.5 text-sm">
           {entry.fields.map((f) => (
             <div key={f.key} className="contents">
               <dt className="text-muted-foreground">{f.label}</dt>
-              <dd className="flex items-center gap-2 font-mono">
+              <dd className="flex items-center gap-2 font-mono text-xs">
                 {f.sensitive && !shown[f.key] ? (
                   <span aria-label={`${f.label} gizli`}>{"•".repeat(8)}</span>
                 ) : (
-                  <span>{f.value}</span>
+                  <span className="break-all">{f.value}</span>
                 )}
                 {f.sensitive && (
                   <button
@@ -86,9 +114,14 @@ export function EntryCard({
                     onClick={() =>
                       setShown((s) => ({ ...s, [f.key]: !s[f.key] }))
                     }
-                    className="text-xs text-muted-foreground underline"
+                    aria-label={shown[f.key] ? "Gizle" : "Göster"}
+                    className="press text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    {shown[f.key] ? "gizle" : "göster"}
+                    {shown[f.key] ? (
+                      <EyeOff className="size-3.5" />
+                    ) : (
+                      <Eye className="size-3.5" />
+                    )}
                   </button>
                 )}
               </dd>
@@ -98,11 +131,16 @@ export function EntryCard({
       )}
 
       {entry.notes && (
-        <p className="text-sm whitespace-pre-wrap">{entry.notes}</p>
+        <p className="mt-3 text-sm whitespace-pre-wrap text-muted-foreground">
+          {entry.notes}
+        </p>
       )}
 
-      <div className="space-y-2 border-t pt-3">
-        <p className="text-xs font-medium text-muted-foreground">Dosyalar</p>
+      <div className="mt-4 space-y-2 border-t border-border/60 pt-3">
+        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <Paperclip className="size-3.5" />
+          Dosyalar
+        </p>
         {entry.attachments.length === 0 ? (
           <p className="text-xs text-muted-foreground">Ek yok.</p>
         ) : (
@@ -114,7 +152,7 @@ export function EntryCard({
                     href={a.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary underline"
+                    className="text-primary underline-offset-4 hover:underline"
                   >
                     {a.name}
                   </a>
@@ -125,9 +163,10 @@ export function EntryCard({
                   <button
                     type="button"
                     onClick={() => removeAttachment(a.id, a.name)}
-                    className="text-xs text-destructive underline"
+                    aria-label="Eki sil"
+                    className="press text-muted-foreground transition-colors hover:text-destructive"
                   >
-                    sil
+                    <X className="size-3.5" />
                   </button>
                 )}
               </li>
@@ -143,9 +182,16 @@ export function EntryCard({
             type="file"
             name="file"
             aria-label={`${entry.label} dosya`}
-            className="text-xs"
+            className="text-xs file:mr-2 file:rounded-md file:border-0 file:bg-accent file:px-2 file:py-1 file:text-accent-foreground"
           />
-          <Button type="submit" size="sm" variant="outline" disabled={uploading}>
+          <Button
+            type="submit"
+            size="sm"
+            variant="outline"
+            className="press gap-1"
+            disabled={uploading}
+          >
+            <Upload className="size-3.5" />
             {uploading ? "Yükleniyor..." : "Yükle"}
           </Button>
         </form>

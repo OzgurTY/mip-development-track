@@ -22,10 +22,10 @@ type Props = {
 
 export function TrackBoard({ rows, defs, canEdit }: Props) {
   return (
-    <div className="rounded-lg border">
+    <div className="bento overflow-hidden">
       <Table>
-        <TableHeader>
-          <TableRow>
+        <TableHeader className="bg-muted/40">
+          <TableRow className="hover:bg-transparent [&_th]:h-11 [&_th]:px-4 [&_th]:text-xs [&_th]:font-semibold [&_th]:tracking-wide [&_th]:text-muted-foreground [&_th]:uppercase">
             <TableHead>Müşteri</TableHead>
             <TableHead>Durum</TableHead>
             <TableHead>Proje</TableHead>
@@ -34,7 +34,7 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
             {canEdit && <TableHead />}
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="[&_td]:px-4 [&_td]:py-3 [&_tr]:hover:bg-accent/60">
           {rows.map((row) => (
             <TableRow key={row.customerId}>
               <TableCell>

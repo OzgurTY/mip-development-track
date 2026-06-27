@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import { createFieldDefinition, type FieldDefState } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +31,14 @@ export function FieldForm({ entity }: { entity: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button>Yeni alan</Button>} />
+      <DialogTrigger
+        render={
+          <Button size="lg" className="press h-10 gap-2">
+            <Plus className="size-4" />
+            Yeni alan
+          </Button>
+        }
+      />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Yeni alan</DialogTitle>

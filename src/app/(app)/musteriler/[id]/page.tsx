@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCustomerDetail } from "@/lib/customers/detail";
 import { getInfraEntries } from "@/lib/infra/queries";
@@ -31,19 +32,24 @@ export default async function CustomerDetailPage({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
+      <div className="space-y-2">
         <Link
           href="/musteriler"
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="press inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
+          <ChevronLeft className="size-4" />
           Müşteriler
         </Link>
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">{detail.customer.name}</h1>
-          {!detail.customer.is_active ? (
-            <span className="text-sm text-muted-foreground">Pasif</span>
-          ) : null}
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            {detail.customer.name}
+          </h1>
           <StatusBadge status={detail.record?.status ?? null} />
+          {!detail.customer.is_active ? (
+            <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground">
+              Pasif
+            </span>
+          ) : null}
         </div>
       </div>
       <CustomerDetailView detail={detail} infra={infra} showInfra={showInfra} />

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
+import { PageHeader } from "@/components/page-header";
 import { CustomerForm } from "./customer-form";
 import { CustomerTable } from "./customer-table";
 
@@ -23,13 +24,9 @@ export default async function CustomersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Müşteriler</h1>
-          <p className="text-sm text-muted-foreground">{rows.length} müşteri</p>
-        </div>
+      <PageHeader title="Müşteriler" subtitle={`${rows.length} müşteri`}>
         <CustomerForm defs={defs} />
-      </div>
+      </PageHeader>
       <CustomerTable rows={rows} canDelete={canDelete} defs={defs} />
     </div>
   );

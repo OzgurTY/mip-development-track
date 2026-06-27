@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getTrackBoard, getCustomerUpdates } from "@/lib/track/queries";
 import { MeetingCard } from "../meeting-card";
+import { PageHeader } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import type { TrackUpdate } from "@/lib/track/types";
 
@@ -36,17 +38,18 @@ export default async function MeetingPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Toplantı modu</h1>
-          <p className="text-sm text-muted-foreground">
-            Alfabetik sırayla {rows.length} müşteri
-          </p>
-        </div>
-        <Link href="/takip" className={buttonVariants({ variant: "outline" })}>
+      <PageHeader
+        title="Toplantı modu"
+        subtitle={`Alfabetik sırayla ${rows.length} müşteri`}
+      >
+        <Link
+          href="/takip"
+          className={buttonVariants({ variant: "outline", size: "lg" }) + " press h-10 gap-2"}
+        >
+          <ChevronLeft className="size-4" />
           Panoya dön
         </Link>
-      </div>
+      </PageHeader>
       <div className="space-y-4">
         {rows.map((row) => (
           <MeetingCard

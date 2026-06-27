@@ -35,13 +35,16 @@ export function CustomerTable({ rows, canDelete, defs }: Props) {
   });
 
   return (
-    <div className="rounded-lg border">
+    <div className="bento overflow-hidden">
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-muted/40">
           {table.getHeaderGroups().map((group) => (
-            <TableRow key={group.id}>
+            <TableRow key={group.id} className="hover:bg-transparent">
               {group.headers.map((header) => (
-                <TableHead key={header.id}>
+                <TableHead
+                  key={header.id}
+                  className="h-11 px-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                >
                   {flexRender(
                     header.column.columnDef.header,
                     header.getContext(),
@@ -56,16 +59,16 @@ export function CustomerTable({ rows, canDelete, defs }: Props) {
             <TableRow>
               <TableCell
                 colSpan={columns.length}
-                className="py-10 text-center text-muted-foreground"
+                className="py-14 text-center text-muted-foreground"
               >
                 Henüz müşteri yok.
               </TableCell>
             </TableRow>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow key={row.id} className="hover:bg-accent/60">
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell key={cell.id} className="px-4 py-3">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

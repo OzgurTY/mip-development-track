@@ -2,7 +2,9 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Gauge } from "lucide-react";
 import { saveComponentLatest, type SaveState } from "@/lib/versions/actions";
+import { BentoCard } from "@/components/bento-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,10 +34,16 @@ function LatestRow({ component }: { component: ComponentLatest }) {
           id={`lv_${component.key}`}
           name="latest_version"
           defaultValue={component.latest_version ?? ""}
-          className="w-40"
+          className="w-36 font-mono"
         />
       </div>
-      <Button type="submit" size="sm" variant="outline" disabled={pending}>
+      <Button
+        type="submit"
+        size="sm"
+        variant="outline"
+        className="press"
+        disabled={pending}
+      >
         Kaydet
       </Button>
     </form>
@@ -44,13 +52,12 @@ function LatestRow({ component }: { component: ComponentLatest }) {
 
 export function LatestPanel({ components }: { components: ComponentLatest[] }) {
   return (
-    <section className="space-y-3 rounded-lg border bg-muted/30 p-4">
-      <h2 className="text-sm font-semibold">Güncel sürüm referansı</h2>
-      <div className="flex flex-wrap gap-4">
+    <BentoCard title="Güncel sürüm referansı" icon={Gauge}>
+      <div className="flex flex-wrap gap-x-5 gap-y-3">
         {components.map((c) => (
           <LatestRow key={c.key} component={c} />
         ))}
       </div>
-    </section>
+    </BentoCard>
   );
 }

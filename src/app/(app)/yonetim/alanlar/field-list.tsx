@@ -2,8 +2,8 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { deleteFieldDefinition } from "./actions";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -37,42 +37,48 @@ export function FieldList({ defs }: { defs: FieldDefinition[] }) {
   }
 
   return (
-    <div className="rounded-lg border">
+    <div className="bento overflow-hidden">
       <Table>
-        <TableHeader>
-          <TableRow>
+        <TableHeader className="bg-muted/40">
+          <TableRow className="hover:bg-transparent [&_th]:h-11 [&_th]:px-4 [&_th]:text-xs [&_th]:font-semibold [&_th]:tracking-wide [&_th]:text-muted-foreground [&_th]:uppercase">
             <TableHead>Alan</TableHead>
             <TableHead>Tür</TableHead>
             <TableHead>Zorunlu</TableHead>
             <TableHead />
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="[&_td]:px-4 [&_td]:py-3">
           {defs.length === 0 ? (
             <TableRow>
               <TableCell
                 colSpan={4}
-                className="py-10 text-center text-muted-foreground"
+                className="py-14 text-center text-muted-foreground"
               >
                 Henüz alan yok.
               </TableCell>
             </TableRow>
           ) : (
             defs.map((d) => (
-              <TableRow key={d.id}>
-                <TableCell>{d.label}</TableCell>
-                <TableCell>{TYPE_LABEL[d.type] ?? d.type}</TableCell>
-                <TableCell>{d.required ? "Evet" : "Hayır"}</TableCell>
+              <TableRow key={d.id} className="hover:bg-accent/60">
+                <TableCell className="font-medium">{d.label}</TableCell>
+                <TableCell>
+                  <span className="rounded-md bg-accent px-2 py-0.5 text-xs text-accent-foreground">
+                    {TYPE_LABEL[d.type] ?? d.type}
+                  </span>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {d.required ? "Evet" : "Hayır"}
+                </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
+                    type="button"
                     disabled={pending}
                     onClick={() => remove(d.id, d.label)}
-                    className="text-destructive hover:text-destructive"
+                    aria-label="Alanı sil"
+                    className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
                   >
-                    Sil
-                  </Button>
+                    <Trash2 className="size-4" />
+                  </button>
                 </TableCell>
               </TableRow>
             ))

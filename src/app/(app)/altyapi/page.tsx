@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
 import { getInfraEntries } from "@/lib/infra/queries";
+import { PageHeader } from "@/components/page-header";
 import { EntryForm } from "./entry-form";
 import { EntryCard } from "./entry-card";
 
@@ -34,12 +36,19 @@ export default async function InfraPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Altyapı & Erişim</h1>
-        <p className="text-sm text-muted-foreground">
-          Hassas alanlar şifreli saklanır, maskeli gösterilir
-        </p>
+      <PageHeader
+        title="Altyapı ve Erişim"
+        subtitle="Hassas alanlar şifreli saklanır, maskeli gösterilir"
+      />
+
+      <div className="flex items-start gap-2 rounded-2xl bg-accent/60 px-3.5 py-2.5 text-sm text-accent-foreground">
+        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+        <span>
+          Bu modül yalnızca editor ve admin rollerine görünür. Parolalar ve
+          anahtarlar veritabanında şifreli tutulur.
+        </span>
       </div>
+
       <div className="flex flex-wrap gap-1.5">
         {customers.map((c) => (
           <Link
@@ -47,28 +56,33 @@ export default async function InfraPage({
             href={`/altyapi?m=${c.id}`}
             className={
               selected?.id === c.id
-                ? "rounded-full bg-primary px-3 py-1 text-sm text-primary-foreground"
-                : "rounded-full bg-muted px-3 py-1 text-sm hover:bg-muted/70"
+                ? "press rounded-full bg-primary px-3.5 py-1.5 text-sm font-medium text-primary-foreground"
+                : "press rounded-full bg-card px-3.5 py-1.5 text-sm text-muted-foreground ring-1 ring-foreground/[0.06] transition-colors hover:text-foreground"
             }
           >
             {c.name}
           </Link>
         ))}
       </div>
+
       {selected && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium">{selected.name}</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-xl font-bold tracking-tight">
+              {selected.name}
+            </h2>
             <EntryForm customerId={selected.id} defs={defs} />
           </div>
           {entries.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <div className="bento grid place-items-center p-10 text-sm text-muted-foreground">
               Bu müşteri için kayıt yok.
-            </p>
+            </div>
           ) : (
-            entries.map((e) => (
-              <EntryCard key={e.id} entry={e} canDelete={role === "admin"} />
-            ))
+            <div className="grid gap-4 md:grid-cols-2">
+              {entries.map((e) => (
+                <EntryCard key={e.id} entry={e} canDelete={role === "admin"} />
+              ))}
+            </div>
           )}
         </div>
       )}

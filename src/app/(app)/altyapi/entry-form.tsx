@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import { saveInfraEntry, type SaveState } from "@/lib/infra/actions";
 import { DynamicFields } from "@/components/fields/dynamic-fields";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,14 @@ export function EntryForm({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button>Yeni kayıt</Button>} />
+      <DialogTrigger
+        render={
+          <Button className="press gap-2">
+            <Plus className="size-4" />
+            Yeni kayıt
+          </Button>
+        }
+      />
       <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Yeni altyapı kaydı</DialogTitle>
