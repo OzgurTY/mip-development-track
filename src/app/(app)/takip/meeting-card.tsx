@@ -53,10 +53,23 @@ export function MeetingCard({ row, updates, defaultWeek, canEdit }: Props) {
         </Link>
       </header>
       {row.record?.project ? (
-        <p className="mt-1 text-sm text-muted-foreground">
-          {row.record.project}
-          {row.record.lead ? ` · ${row.record.lead}` : ""}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{row.record.project}</p>
+      ) : null}
+      {row.record?.lead || row.record?.responsibles ? (
+        <div className="mt-1.5 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+          {row.record?.lead ? (
+            <span>
+              <span className="text-muted-foreground">Lead:</span>{" "}
+              <span className="font-medium">{row.record.lead}</span>
+            </span>
+          ) : null}
+          {row.record?.responsibles ? (
+            <span>
+              <span className="text-muted-foreground">Sorumlular:</span>{" "}
+              <span className="font-medium">{row.record.responsibles}</span>
+            </span>
+          ) : null}
+        </div>
       ) : null}
 
       <div className="mt-4 grid gap-5 lg:grid-cols-2">
