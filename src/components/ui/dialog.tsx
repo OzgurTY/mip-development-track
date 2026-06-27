@@ -12,7 +12,16 @@ function Dialog({ ...props }: DialogPrimitive.Root.Props) {
 }
 
 function DialogTrigger({ ...props }: DialogPrimitive.Trigger.Props) {
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+  // suppressHydrationWarning: when used with `render={<Button>}`, Base UI merges
+  // both `data-slot` values and the SSR/CSR merge order differs (dialog-trigger
+  // vs button). data-slot is a cosmetic selector hook, so the mismatch is benign.
+  return (
+    <DialogPrimitive.Trigger
+      data-slot="dialog-trigger"
+      suppressHydrationWarning
+      {...props}
+    />
+  )
 }
 
 function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {
