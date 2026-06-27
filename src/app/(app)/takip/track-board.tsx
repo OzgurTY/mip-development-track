@@ -45,7 +45,8 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
       return (
         r.name.toLocaleLowerCase("tr").includes(q) ||
         (r.record?.project ?? "").toLocaleLowerCase("tr").includes(q) ||
-        (r.record?.lead ?? "").toLocaleLowerCase("tr").includes(q)
+        (r.record?.lead ?? "").toLocaleLowerCase("tr").includes(q) ||
+        (r.record?.responsibles ?? "").toLocaleLowerCase("tr").includes(q)
       );
     });
   }, [rows, query, status]);
@@ -79,6 +80,7 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
               <TableHead>Durum</TableHead>
               <TableHead>Proje</TableHead>
               <TableHead>Lead</TableHead>
+              <TableHead>Sorumlular</TableHead>
               <TableHead>Son güncelleme</TableHead>
               {canEdit && <TableHead />}
             </TableRow>
@@ -86,7 +88,7 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={canEdit ? 6 : 5} className="p-0">
+                <TableCell colSpan={canEdit ? 7 : 6} className="p-0">
                   <EmptyState
                     icon={ListChecks}
                     title="Eşleşen kayıt yok"
@@ -115,6 +117,16 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
                   </TableCell>
                   <TableCell className="px-4 text-sm">
                     {row.record?.lead ?? (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell
+                    className="max-w-[16rem] truncate px-4 text-sm text-muted-foreground"
+                    title={row.record?.responsibles ?? undefined}
+                  >
+                    {row.record?.responsibles ? (
+                      row.record.responsibles
+                    ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
