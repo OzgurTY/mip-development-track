@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DeleteCustomerButton } from "./delete-button";
 import type { FieldDefinition } from "@/lib/fields/types";
@@ -23,13 +24,24 @@ export function buildColumns(
   defs: FieldDefinition[],
 ): ColumnDef<CustomerRow>[] {
   const cols: ColumnDef<CustomerRow>[] = [
-    { accessorKey: "name", header: "Müşteri" },
+    {
+      accessorKey: "name",
+      header: "Müşteri",
+      cell: ({ row }) => (
+        <Link
+          href={`/musteriler/${row.original.id}`}
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
+          {row.original.name}
+        </Link>
+      ),
+    },
     {
       accessorKey: "is_active",
       header: "Durum",
       cell: ({ row }) =>
         row.original.is_active ? (
-          "Aktif"
+          <span className="text-foreground">Aktif</span>
         ) : (
           <span className="text-muted-foreground">Pasif</span>
         ),

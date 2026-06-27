@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { TrackEdit } from "./track-edit";
+import { StatusBadge } from "@/components/status-badge";
 import {
   Table,
   TableBody,
@@ -11,13 +13,6 @@ import {
 } from "@/components/ui/table";
 import type { BoardRow } from "@/lib/track/types";
 import type { FieldDefinition } from "@/lib/fields/types";
-
-const STATUS_TONE: Record<string, string> = {
-  Aktif: "bg-chart-3/15 text-foreground",
-  Stabil: "bg-chart-1/15 text-foreground",
-  Beklemede: "bg-chart-4/20 text-foreground",
-  İnaktif: "bg-muted text-muted-foreground",
-};
 
 type Props = {
   rows: BoardRow[];
@@ -42,19 +37,16 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
         <TableBody>
           {rows.map((row) => (
             <TableRow key={row.customerId}>
-              <TableCell className="font-medium">{row.name}</TableCell>
               <TableCell>
-                {row.record?.status ? (
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs ${
-                      STATUS_TONE[row.record.status] ?? "bg-muted"
-                    }`}
-                  >
-                    {row.record.status}
-                  </span>
-                ) : (
-                  <span className="text-muted-foreground">-</span>
-                )}
+                <Link
+                  href={`/musteriler/${row.customerId}`}
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  {row.name}
+                </Link>
+              </TableCell>
+              <TableCell>
+                <StatusBadge status={row.record?.status ?? null} />
               </TableCell>
               <TableCell>{row.record?.project ?? ""}</TableCell>
               <TableCell>{row.record?.lead ?? ""}</TableCell>
