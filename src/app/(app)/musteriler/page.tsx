@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getFieldDefinitions } from "@/lib/fields/queries";
 import { CustomerForm } from "./customer-form";
 import { CustomerTable } from "./customer-table";
 
@@ -8,9 +9,13 @@ export default async function CustomersPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [rowsResult, profileResult] = await Promise.all([
-    supabase.from("customers").select("id, name, is_active").order("name"),
+  const [rowsResult, profileResult, defs] = await Promise.all([
+    supabase
+      .from("customers")
+      .select("id, name, is_active, custom_fields")
+      .order("name"),
     supabase.from("profiles").select("role").eq("id", user!.id).single(),
+    getFieldDefinitions("customer"),
   ]);
 
   const rows = rowsResult.data ?? [];
@@ -23,9 +28,9 @@ export default async function CustomersPage() {
           <h1 className="text-2xl font-semibold">Müşteriler</h1>
           <p className="text-sm text-muted-foreground">{rows.length} müşteri</p>
         </div>
-        <CustomerForm />
+        <CustomerForm defs={defs} />
       </div>
-      <CustomerTable rows={rows} canDelete={canDelete} />
+      <CustomerTable rows={rows} canDelete={canDelete} defs={defs} />
     </div>
   );
 }

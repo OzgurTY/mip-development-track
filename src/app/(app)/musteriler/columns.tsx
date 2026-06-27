@@ -2,15 +2,27 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { DeleteCustomerButton } from "./delete-button";
+import type { FieldDefinition } from "@/lib/fields/types";
 
 export type CustomerRow = {
   id: string;
   name: string;
   is_active: boolean;
+  custom_fields: Record<string, unknown>;
 };
 
-export function buildColumns(canDelete: boolean): ColumnDef<CustomerRow>[] {
-  const base: ColumnDef<CustomerRow>[] = [
+function renderValue(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "boolean") return value ? "Evet" : "Hayır";
+  return String(value);
+}
+
+export function buildColumns(
+  canDelete: boolean,
+  defs: FieldDefinition[],
+): ColumnDef<CustomerRow>[] {
+  const cols: ColumnDef<CustomerRow>[] = [
     { accessorKey: "name", header: "Müşteri" },
     {
       accessorKey: "is_active",
@@ -24,11 +36,16 @@ export function buildColumns(canDelete: boolean): ColumnDef<CustomerRow>[] {
     },
   ];
 
-  if (!canDelete) return base;
+  for (const def of defs) {
+    cols.push({
+      id: `cf_${def.key}`,
+      header: def.label,
+      cell: ({ row }) => renderValue(row.original.custom_fields?.[def.key]),
+    });
+  }
 
-  return [
-    ...base,
-    {
+  if (canDelete) {
+    cols.push({
       id: "actions",
       header: "",
       cell: ({ row }) => (
@@ -36,6 +53,8 @@ export function buildColumns(canDelete: boolean): ColumnDef<CustomerRow>[] {
           <DeleteCustomerButton id={row.original.id} name={row.original.name} />
         </div>
       ),
-    },
-  ];
+    });
+  }
+
+  return cols;
 }

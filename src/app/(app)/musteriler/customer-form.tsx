@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { createCustomer, type CreateState } from "./actions";
+import { DynamicFields } from "@/components/fields/dynamic-fields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +13,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import type { FieldDefinition } from "@/lib/fields/types";
 
-export function CustomerForm() {
+export function CustomerForm({ defs }: { defs: FieldDefinition[] }) {
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState<CreateState, FormData>(
     createCustomer,
@@ -36,6 +38,7 @@ export function CustomerForm() {
             <Label htmlFor="name">Müşteri adı</Label>
             <Input id="name" name="name" required autoFocus />
           </div>
+          <DynamicFields defs={defs} />
           {state && "error" in state && (
             <p className="text-sm text-destructive">{state.error}</p>
           )}

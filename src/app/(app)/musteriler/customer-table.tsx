@@ -15,14 +15,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { buildColumns, type CustomerRow } from "./columns";
+import type { FieldDefinition } from "@/lib/fields/types";
 
 type Props = {
   rows: CustomerRow[];
   canDelete: boolean;
+  defs: FieldDefinition[];
 };
 
-export function CustomerTable({ rows, canDelete }: Props) {
-  const columns = useMemo(() => buildColumns(canDelete), [canDelete]);
+export function CustomerTable({ rows, canDelete, defs }: Props) {
+  const columns = useMemo(
+    () => buildColumns(canDelete, defs),
+    [canDelete, defs],
+  );
   const table = useReactTable({
     data: rows,
     columns,
