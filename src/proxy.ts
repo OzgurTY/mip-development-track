@@ -2,11 +2,12 @@ import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 export async function proxy(request: NextRequest) {
-  // Server Action POSTs (file uploads etc.) must stream their body straight to
-  // the action. Running updateSession here recreates the request and truncates
-  // large multipart bodies ("Unexpected end of form"). Auth is still enforced
-  // inside the action/page via createClient + RLS, so pass these through.
-  if (request.method === "POST" && request.headers.has("next-action")) {
+  // Server Action / form POSTs (file uploads etc.) must stream their body
+  // straight to the handler. Running updateSession here recreates the request
+  // and truncates large multipart bodies ("Unexpected end of form"). Auth is
+  // still enforced inside the action/page via createClient + RLS and the (app)
+  // layout's user check, so let every non-GET request pass through untouched.
+  if (request.method !== "GET") {
     return NextResponse.next();
   }
 
