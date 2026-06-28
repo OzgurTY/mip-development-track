@@ -30,7 +30,7 @@ import {
 } from "@/lib/infra/credential-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { INFRA_TYPES, type InfraEntry } from "@/lib/infra/types";
+import { INFRA_TYPES, type InfraEntry, type Credential } from "@/lib/infra/types";
 import type { LucideIcon } from "lucide-react";
 
 const TYPE_LABEL: Record<string, string> = Object.fromEntries(INFRA_TYPES);
@@ -41,6 +41,29 @@ const TYPE_ICON: Record<string, LucideIcon> = {
   vpn: ShieldEllipsis,
   diger: KeyRound,
 };
+
+const ROLE_SUGGESTIONS = [
+  "SSH",
+  "Servis SFTP",
+  "PostgreSQL",
+  "Web Login",
+  "Servis Kullanıcı",
+];
+
+// Kimlikleri rol/gruba göre, ilk görülme sırasını koruyarak grupla.
+function groupCredentials(creds: Credential[]) {
+  const order: string[] = [];
+  const map = new Map<string, Credential[]>();
+  for (const c of creds) {
+    const key = c.role?.trim() ?? "";
+    if (!map.has(key)) {
+      map.set(key, []);
+      order.push(key);
+    }
+    map.get(key)!.push(c);
+  }
+  return order.map((role) => ({ role, items: map.get(role)! }));
+}
 
 export function EntryCard({
   entry,
@@ -171,55 +194,61 @@ export function EntryCard({
         {entry.credentials.length === 0 ? (
           <p className="text-xs text-muted-foreground">Kimlik yok.</p>
         ) : (
-          <ul className="space-y-1.5">
-            {entry.credentials.map((c) => (
-              <li
-                key={c.id}
-                className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-xl bg-muted/40 px-3 py-2 text-sm"
-              >
-                <span className="font-mono font-medium">{c.username}</span>
-                {c.secret ? (
-                  <span className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
-                    {credShown[c.id] ? c.secret : "••••••••"}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setCredShown((s) => ({ ...s, [c.id]: !s[c.id] }))
-                      }
-                      aria-label={credShown[c.id] ? "Gizle" : "Göster"}
-                      className="press text-muted-foreground transition-colors hover:text-foreground"
+          <div className="space-y-2.5">
+            {groupCredentials(entry.credentials).map((g) => (
+              <div key={g.role || "_"} className="space-y-1">
+                {g.role ? (
+                  <p className="text-[0.7rem] font-semibold tracking-wide text-muted-foreground/70 uppercase">
+                    {g.role}
+                  </p>
+                ) : null}
+                <ul className="space-y-1.5">
+                  {g.items.map((c) => (
+                    <li
+                      key={c.id}
+                      className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-xl bg-muted/40 px-3 py-2 text-sm"
                     >
-                      {credShown[c.id] ? (
-                        <EyeOff className="size-3.5" />
-                      ) : (
-                        <Eye className="size-3.5" />
-                      )}
-                    </button>
-                  </span>
-                ) : null}
-                {c.role ? (
-                  <span className="rounded-md bg-accent px-1.5 py-0.5 text-xs font-medium text-accent-foreground">
-                    {c.role}
-                  </span>
-                ) : null}
-                {c.note ? (
-                  <span className="truncate text-xs text-muted-foreground">
-                    {c.note}
-                  </span>
-                ) : null}
-                {canDelete ? (
-                  <button
-                    type="button"
-                    onClick={() => removeCredential(c.id, c.username)}
-                    aria-label="Kimliği sil"
-                    className="press ml-auto text-muted-foreground transition-colors hover:text-destructive"
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                ) : null}
-              </li>
+                      <span className="font-mono font-medium">{c.username}</span>
+                      {c.secret ? (
+                        <span className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
+                          {credShown[c.id] ? c.secret : "••••••••"}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCredShown((s) => ({ ...s, [c.id]: !s[c.id] }))
+                            }
+                            aria-label={credShown[c.id] ? "Gizle" : "Göster"}
+                            className="press text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            {credShown[c.id] ? (
+                              <EyeOff className="size-3.5" />
+                            ) : (
+                              <Eye className="size-3.5" />
+                            )}
+                          </button>
+                        </span>
+                      ) : null}
+                      {c.note ? (
+                        <span className="truncate text-xs text-muted-foreground">
+                          {c.note}
+                        </span>
+                      ) : null}
+                      {canDelete ? (
+                        <button
+                          type="button"
+                          onClick={() => removeCredential(c.id, c.username)}
+                          aria-label="Kimliği sil"
+                          className="press ml-auto text-muted-foreground transition-colors hover:text-destructive"
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
         <form
           ref={credFormRef}
@@ -242,10 +271,16 @@ export function EntryCard({
           />
           <Input
             name="role"
-            placeholder="Rol"
-            aria-label="Rol"
-            className="h-8 w-24"
+            placeholder="Grup / Rol"
+            aria-label="Grup veya rol"
+            list="cred-roles"
+            className="h-8 w-32"
           />
+          <datalist id="cred-roles">
+            {ROLE_SUGGESTIONS.map((r) => (
+              <option key={r} value={r} />
+            ))}
+          </datalist>
           <Input
             name="note"
             placeholder="Not"
