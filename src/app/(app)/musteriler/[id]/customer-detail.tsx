@@ -222,7 +222,13 @@ export function CustomerDetailView({
             <Empty>Kayıt yok.</Empty>
           ) : (
             infra.map((e) => (
-              <EntryCard key={e.id} entry={e} canDelete={canDelete} />
+              <EntryCard
+                key={e.id}
+                entry={e}
+                canDelete={canDelete}
+                defs={infraDefs}
+                types={infraTypes}
+              />
             ))
           )}
         </BentoCard>

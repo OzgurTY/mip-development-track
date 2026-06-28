@@ -153,7 +153,7 @@ function FieldControl({
           type={def.is_sensitive ? "password" : "text"}
           autoComplete={def.is_sensitive ? "new-password" : undefined}
           required={def.required}
-          defaultValue={def.is_sensitive ? undefined : asString(value)}
+          defaultValue={asString(value)}
         />
       );
   }

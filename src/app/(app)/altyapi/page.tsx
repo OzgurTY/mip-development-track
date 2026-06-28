@@ -82,7 +82,13 @@ export default async function InfraPage({
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {entries.map((e) => (
-                <EntryCard key={e.id} entry={e} canDelete={role === "admin"} />
+                <EntryCard
+                  key={e.id}
+                  entry={e}
+                  canDelete={role === "admin"}
+                  defs={defs}
+                  types={types}
+                />
               ))}
             </div>
           )}

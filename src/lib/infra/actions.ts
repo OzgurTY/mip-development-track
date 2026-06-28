@@ -15,6 +15,7 @@ const schema = z.object({
 });
 
 export async function saveInfraEntry(
+  entryId: string | null,
   customerId: string,
   _prev: SaveState,
   formData: FormData,
@@ -28,7 +29,8 @@ export async function saveInfraEntry(
     return { error: parsed.error.issues[0]?.message ?? "Geçersiz giriş" };
   }
 
-  const defs = await getFieldDefinitions("infra");
+  // Only the selected type's fields are rendered, so collect those.
+  const defs = await getFieldDefinitions("infra", parsed.data.type);
   const fields: Record<string, unknown> = {};
   for (const def of defs) {
     const value = formData.get(`cf_${def.key}`);
@@ -41,15 +43,30 @@ export async function saveInfraEntry(
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const { error } = await supabase.from("infra_entries").insert({
-    customer_id: customerId,
-    type: parsed.data.type,
-    label: parsed.data.label,
-    notes: parsed.data.notes || null,
-    fields,
-    created_by: user?.id ?? null,
-  });
-  if (error) return { error: "Kayıt başarısız" };
+
+  if (entryId) {
+    const { error } = await supabase
+      .from("infra_entries")
+      .update({
+        type: parsed.data.type,
+        label: parsed.data.label,
+        notes: parsed.data.notes || null,
+        fields,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", entryId);
+    if (error) return { error: "Güncelleme başarısız" };
+  } else {
+    const { error } = await supabase.from("infra_entries").insert({
+      customer_id: customerId,
+      type: parsed.data.type,
+      label: parsed.data.label,
+      notes: parsed.data.notes || null,
+      fields,
+      created_by: user?.id ?? null,
+    });
+    if (error) return { error: "Kayıt başarısız" };
+  }
 
   revalidatePath("/altyapi");
   return { ok: true };

@@ -17,6 +17,7 @@ import {
   Users,
   Plus,
   Database,
+  Pencil,
 } from "lucide-react";
 import { deleteInfraEntry } from "@/lib/infra/actions";
 import {
@@ -29,9 +30,16 @@ import {
   deleteCredential,
   type CredState,
 } from "@/lib/infra/credential-actions";
+import { EntryForm } from "./entry-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { type InfraEntry, type Credential } from "@/lib/infra/types";
+import { CopyButton } from "@/components/copy-button";
+import {
+  type InfraEntry,
+  type Credential,
+  type InfraType,
+} from "@/lib/infra/types";
+import type { FieldDefinition } from "@/lib/fields/types";
 import type { LucideIcon } from "lucide-react";
 
 const TYPE_ICON: Record<string, LucideIcon> = {
@@ -69,9 +77,13 @@ function groupCredentials(creds: Credential[]) {
 export function EntryCard({
   entry,
   canDelete,
+  defs,
+  types,
 }: {
   entry: InfraEntry;
   canDelete: boolean;
+  defs: FieldDefinition[];
+  types: InfraType[];
 }) {
   const router = useRouter();
   const [shown, setShown] = useState<Record<string, boolean>>({});
@@ -133,16 +145,33 @@ export function EntryCard({
             <p className="text-xs text-muted-foreground">{entry.typeLabel}</p>
           </div>
         </div>
-        {canDelete && (
-          <button
-            type="button"
-            onClick={removeEntry}
-            aria-label="Kaydı sil"
-            className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-          >
-            <Trash2 className="size-4" />
-          </button>
-        )}
+        <div className="flex items-center gap-1">
+          <EntryForm
+            customerId={entry.customer_id}
+            defs={defs}
+            types={types}
+            entry={entry}
+            trigger={
+              <button
+                type="button"
+                aria-label="Kaydı düzenle"
+                className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                <Pencil className="size-4" />
+              </button>
+            }
+          />
+          {canDelete && (
+            <button
+              type="button"
+              onClick={removeEntry}
+              aria-label="Kaydı sil"
+              className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 className="size-4" />
+            </button>
+          )}
+        </div>
       </header>
 
       {entry.fields.length > 0 && (
@@ -172,6 +201,7 @@ export function EntryCard({
                     )}
                   </button>
                 )}
+                <CopyButton value={f.value} label={`${f.label} kopyala`} />
               </dd>
             </div>
           ))}
@@ -225,6 +255,10 @@ export function EntryCard({
                               <Eye className="size-3.5" />
                             )}
                           </button>
+                          <CopyButton
+                            value={c.secret}
+                            label={`${c.username} parolası kopyala`}
+                          />
                         </span>
                       ) : null}
                       {c.note ? (
