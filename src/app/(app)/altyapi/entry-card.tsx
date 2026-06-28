@@ -16,6 +16,7 @@ import {
   X,
   Users,
   Plus,
+  Database,
 } from "lucide-react";
 import { deleteInfraEntry } from "@/lib/infra/actions";
 import {
@@ -30,15 +31,15 @@ import {
 } from "@/lib/infra/credential-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { INFRA_TYPES, type InfraEntry, type Credential } from "@/lib/infra/types";
+import { type InfraEntry, type Credential } from "@/lib/infra/types";
 import type { LucideIcon } from "lucide-react";
 
-const TYPE_LABEL: Record<string, string> = Object.fromEntries(INFRA_TYPES);
 const TYPE_ICON: Record<string, LucideIcon> = {
   sunucu: Server,
   mip: Cog,
   baglanti: Network,
   vpn: ShieldEllipsis,
+  veritabani: Database,
   diger: KeyRound,
 };
 
@@ -129,9 +130,7 @@ export function EntryCard({
           </span>
           <div>
             <h3 className="font-semibold">{entry.label}</h3>
-            <p className="text-xs text-muted-foreground">
-              {TYPE_LABEL[entry.type] ?? entry.type}
-            </p>
+            <p className="text-xs text-muted-foreground">{entry.typeLabel}</p>
           </div>
         </div>
         {canDelete && (

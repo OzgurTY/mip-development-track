@@ -1,8 +1,14 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
+import { getInfraTypes } from "@/lib/infra/type-queries";
 import { PageHeader } from "@/components/page-header";
-import { FieldAdminTabs, type FieldGroup } from "./field-admin-tabs";
+import {
+  FieldAdminTabs,
+  type FlatGroup,
+  type InfraGroup,
+} from "./field-admin-tabs";
+import type { FieldDefinition } from "@/lib/fields/types";
 
 export default async function FieldAdminPage() {
   const supabase = await createClient();
@@ -16,14 +22,15 @@ export default async function FieldAdminPage() {
     .single();
   if (profile?.role !== "admin") redirect("/");
 
-  const [customer, track, version, infra] = await Promise.all([
+  const [customer, track, version, infraDefs, infraTypes] = await Promise.all([
     getFieldDefinitions("customer"),
     getFieldDefinitions("track"),
     getFieldDefinitions("version"),
     getFieldDefinitions("infra"),
+    getInfraTypes(),
   ]);
 
-  const groups: FieldGroup[] = [
+  const flat: FlatGroup[] = [
     {
       entity: "customer",
       label: "Müşteriler",
@@ -43,13 +50,19 @@ export default async function FieldAdminPage() {
         "Sürüm kayıtlarındaki bileşenler ve ek özellikler (var/yok).",
       defs: version,
     },
-    {
-      entity: "infra",
-      label: "Altyapı",
-      description: "Altyapı kayıtlarındaki alanlar (hassas alanlar şifreli).",
-      defs: infra,
-    },
   ];
+
+  const fieldsByType: Record<string, FieldDefinition[]> = {};
+  for (const t of infraTypes) {
+    fieldsByType[t.key] = infraDefs.filter((d) => d.group === t.key);
+  }
+
+  const infra: InfraGroup = {
+    label: "Altyapı",
+    description: "Altyapı tipleri ve her tipin alanları.",
+    types: infraTypes,
+    fieldsByType,
+  };
 
   return (
     <div className="space-y-6">
@@ -57,7 +70,7 @@ export default async function FieldAdminPage() {
         title="Yönetim"
         subtitle="Her modülün alan yapısını buradan yönet."
       />
-      <FieldAdminTabs groups={groups} />
+      <FieldAdminTabs flat={flat} infra={infra} />
     </div>
   );
 }

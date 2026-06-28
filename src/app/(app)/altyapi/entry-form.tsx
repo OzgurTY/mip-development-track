@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { saveInfraEntry, type SaveState } from "@/lib/infra/actions";
 import { DynamicFields } from "@/components/fields/dynamic-fields";
@@ -17,17 +17,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { INFRA_TYPES } from "@/lib/infra/types";
 import type { FieldDefinition } from "@/lib/fields/types";
+import type { InfraType } from "@/lib/infra/types";
 
 export function EntryForm({
   customerId,
   defs,
+  types,
 }: {
   customerId: string;
   defs: FieldDefinition[];
+  types: InfraType[];
 }) {
   const [open, setOpen] = useState(false);
+  const [type, setType] = useState(types[0]?.key ?? "diger");
   const save = saveInfraEntry.bind(null, customerId);
   const [state, action, pending] = useActionState<SaveState, FormData>(
     save,
@@ -37,6 +40,11 @@ export function EntryForm({
   useEffect(() => {
     if (state && "ok" in state && state.ok) setOpen(false);
   }, [state]);
+
+  const typeFields = useMemo(
+    () => defs.filter((d) => d.group === type),
+    [defs, type],
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -57,10 +65,15 @@ export function EntryForm({
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="type">Tür</Label>
-                <Select id="type" name="type" defaultValue="sunucu">
-                  {INFRA_TYPES.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
+                <Select
+                  id="type"
+                  name="type"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                >
+                  {types.map((t) => (
+                    <option key={t.key} value={t.key}>
+                      {t.label}
                     </option>
                   ))}
                 </Select>
@@ -72,11 +85,20 @@ export function EntryForm({
             </div>
           </FormSection>
 
-          {defs.length > 0 ? (
-            <FormSection title="Alanlar" description="Hassas alanlar şifreli saklanır">
-              <DynamicFields defs={defs} />
+          {typeFields.length > 0 ? (
+            <FormSection
+              title={`${types.find((t) => t.key === type)?.label ?? ""} alanları`}
+              description="Hassas alanlar şifreli saklanır"
+            >
+              <DynamicFields defs={typeFields} />
             </FormSection>
-          ) : null}
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Bu tip için tanımlı alan yok. Yönetim &rarr; Altyapı&apos;dan
+              ekleyebilirsin. Kullanıcıları kayıt oluştuktan sonra Kimlikler
+              bölümünden eklersin.
+            </p>
+          )}
 
           <FormSection>
             <div className="space-y-1.5">

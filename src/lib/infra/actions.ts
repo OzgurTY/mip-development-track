@@ -9,7 +9,7 @@ import { encrypt } from "@/lib/crypto/secret";
 export type SaveState = { error: string } | { ok: true } | null;
 
 const schema = z.object({
-  type: z.enum(["sunucu", "mip", "baglanti", "vpn", "diger"]),
+  type: z.string().trim().min(1, "Tip gerekli").max(60),
   label: z.string().trim().min(1, "Etiket zorunlu").max(200),
   notes: z.string().trim().max(2000).optional(),
 });

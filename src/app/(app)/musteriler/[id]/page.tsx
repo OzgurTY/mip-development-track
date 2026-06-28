@@ -4,6 +4,7 @@ import { ChevronLeft, Layers, TrendingDown, Clock, Building2 } from "lucide-reac
 import { createClient } from "@/lib/supabase/server";
 import { getCustomerDetail } from "@/lib/customers/detail";
 import { getInfraEntries } from "@/lib/infra/queries";
+import { getInfraTypes } from "@/lib/infra/type-queries";
 import { getFieldDefinitions } from "@/lib/fields/queries";
 import { rowDrift } from "@/lib/dashboard/compute";
 import { CustomerDetailView } from "./customer-detail";
@@ -33,12 +34,14 @@ export default async function CustomerDetailPage({
   const canEdit = role === "admin" || role === "editor";
   const showInfra = canEdit;
 
-  const [customerDefs, trackDefs, versionDefs, infraDefs] = await Promise.all([
-    getFieldDefinitions("customer"),
-    getFieldDefinitions("track"),
-    getFieldDefinitions("version"),
-    getFieldDefinitions("infra"),
-  ]);
+  const [customerDefs, trackDefs, versionDefs, infraDefs, infraTypes] =
+    await Promise.all([
+      getFieldDefinitions("customer"),
+      getFieldDefinitions("track"),
+      getFieldDefinitions("version"),
+      getFieldDefinitions("infra"),
+      getInfraTypes(),
+    ]);
   const infra: InfraEntry[] = showInfra ? await getInfraEntries(id) : [];
 
   const totalBehind = detail.versions.reduce(
@@ -107,6 +110,7 @@ export default async function CustomerDetailPage({
         trackDefs={trackDefs}
         versionDefs={versionDefs}
         infraDefs={infraDefs}
+        infraTypes={infraTypes}
       />
     </div>
   );

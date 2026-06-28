@@ -7,14 +7,17 @@ export async function getInfraEntries(
   customerId: string,
 ): Promise<InfraEntry[]> {
   const supabase = await createClient();
-  const [defs, rows] = await Promise.all([
+  const [defs, rows, typeRows] = await Promise.all([
     getFieldDefinitions("infra"),
     supabase
       .from("infra_entries")
       .select("id, customer_id, type, label, notes, fields")
       .eq("customer_id", customerId)
       .order("created_at", { ascending: false }),
+    supabase.from("infra_types").select("key, label"),
   ]);
+  const typeLabels = new Map<string, string>();
+  for (const t of typeRows.data ?? []) typeLabels.set(t.key, t.label);
 
   const entries: InfraEntry[] = (rows.data ?? []).map((row) => {
     const stored = (row.fields ?? {}) as Record<string, unknown>;
@@ -38,6 +41,7 @@ export async function getInfraEntries(
       id: row.id,
       customer_id: row.customer_id,
       type: row.type,
+      typeLabel: typeLabels.get(row.type) ?? row.type,
       label: row.label,
       notes: row.notes,
       fields,

@@ -58,8 +58,13 @@ export async function createFieldDefinition(
     return { error: "Seçmeli alan için en az bir seçenek gerekli" };
   }
 
-  const key =
+  // Infra alanları tipe özel; aynı etiket farklı tiplerde olabildiği için anahtar
+  // tip (group) ile öneklenir (vpn_kullanici, sap_kullanici gibi).
+  const group = String(formData.get("group") ?? "").trim() || null;
+  const base =
     slugify(parsed.data.label).replace(/-/g, "_") || `alan_${Date.now()}`;
+  const key =
+    parsed.data.entity === "infra" && group ? `${group}_${base}` : base;
 
   const supabase = await createClient();
   const { error } = await supabase.from("field_definitions").insert({
@@ -69,6 +74,7 @@ export async function createFieldDefinition(
     type: parsed.data.type,
     options: parsed.data.options,
     required: parsed.data.required,
+    field_group: group,
   });
   if (error) {
     return {

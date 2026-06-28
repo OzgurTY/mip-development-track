@@ -17,4 +17,5 @@ export type FieldDefinition = {
   required: boolean;
   is_sensitive: boolean;
   sort_order: number;
+  group?: string | null;
 };

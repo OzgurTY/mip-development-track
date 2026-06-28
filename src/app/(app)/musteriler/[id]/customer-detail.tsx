@@ -9,7 +9,7 @@ import { VersionEdit } from "../../surumler/version-edit";
 import { EntryForm } from "../../altyapi/entry-form";
 import { EntryCard } from "../../altyapi/entry-card";
 import type { CustomerDetail } from "@/lib/customers/detail";
-import type { InfraEntry } from "@/lib/infra/types";
+import type { InfraEntry, InfraType } from "@/lib/infra/types";
 import type { FieldDefinition } from "@/lib/fields/types";
 import type { VersionRecord } from "@/lib/versions/types";
 
@@ -29,6 +29,7 @@ type Props = {
   trackDefs: FieldDefinition[];
   versionDefs: FieldDefinition[];
   infraDefs: FieldDefinition[];
+  infraTypes: InfraType[];
 };
 
 export function CustomerDetailView({
@@ -40,6 +41,7 @@ export function CustomerDetailView({
   trackDefs,
   versionDefs,
   infraDefs,
+  infraTypes,
 }: Props) {
   const { record, updates, versions, components, customer } = detail;
   const componentKeys = new Set(components.map((c) => c.key));
@@ -207,7 +209,11 @@ export function CustomerDetailView({
           className="lg:col-span-2"
           action={
             canEdit ? (
-              <EntryForm customerId={customer.id} defs={infraDefs} />
+              <EntryForm
+                customerId={customer.id}
+                defs={infraDefs}
+                types={infraTypes}
+              />
             ) : undefined
           }
           bodyClassName="grid gap-4 sm:grid-cols-2"

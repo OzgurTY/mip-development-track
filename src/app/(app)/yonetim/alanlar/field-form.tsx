@@ -26,7 +26,13 @@ const TYPES: [string, string][] = [
   ["multiselect", "Çoklu seçmeli"],
 ];
 
-export function FieldForm({ entity }: { entity: string }) {
+export function FieldForm({
+  entity,
+  group,
+}: {
+  entity: string;
+  group?: string;
+}) {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState("text");
   const [state, action, pending] = useActionState<FieldDefState, FormData>(
@@ -59,6 +65,7 @@ export function FieldForm({ entity }: { entity: string }) {
         </DialogHeader>
         <form action={action} className="space-y-4">
           <input type="hidden" name="entity" value={entity} />
+          {group ? <input type="hidden" name="group" value={group} /> : null}
           <div className="space-y-1.5">
             <Label htmlFor="label">Etiket</Label>
             <Input id="label" name="label" required autoFocus />

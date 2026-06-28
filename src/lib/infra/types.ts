@@ -27,10 +27,18 @@ export type Credential = {
   note: string | null;
 };
 
+export type InfraType = {
+  id: string;
+  key: string;
+  label: string;
+  sort_order: number;
+};
+
 export type InfraEntry = {
   id: string;
   customer_id: string;
   type: string;
+  typeLabel: string;
   label: string;
   notes: string | null;
   fields: InfraField[];

@@ -4,6 +4,7 @@ import { ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
 import { getInfraEntries } from "@/lib/infra/queries";
+import { getInfraTypes } from "@/lib/infra/type-queries";
 import { PageHeader } from "@/components/page-header";
 import { EntryForm } from "./entry-form";
 import { EntryCard } from "./entry-card";
@@ -26,9 +27,10 @@ export default async function InfraPage({
   if (!["editor", "admin"].includes(role)) redirect("/");
 
   const { m } = await searchParams;
-  const [customersResult, defs] = await Promise.all([
+  const [customersResult, defs, types] = await Promise.all([
     supabase.from("customers").select("id, name").order("name"),
     getFieldDefinitions("infra"),
+    getInfraTypes(),
   ]);
   const customers = customersResult.data ?? [];
   const selected = customers.find((c) => c.id === m) ?? customers[0];
@@ -71,7 +73,7 @@ export default async function InfraPage({
             <h2 className="font-display text-xl font-bold tracking-tight">
               {selected.name}
             </h2>
-            <EntryForm customerId={selected.id} defs={defs} />
+            <EntryForm customerId={selected.id} defs={defs} types={types} />
           </div>
           {entries.length === 0 ? (
             <div className="bento grid place-items-center p-10 text-sm text-muted-foreground">
