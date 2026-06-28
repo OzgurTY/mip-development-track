@@ -53,6 +53,7 @@ export function TrackEdit({ customerId, name, record, defs }: Props) {
         <DialogHeader>
           <DialogTitle>{name} - takip</DialogTitle>
         </DialogHeader>
+        {open ? (
         <form action={action} className="space-y-5">
           <FormSection>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -120,6 +121,7 @@ export function TrackEdit({ customerId, name, record, defs }: Props) {
             {pending ? "Kaydediliyor..." : "Kaydet"}
           </Button>
         </form>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

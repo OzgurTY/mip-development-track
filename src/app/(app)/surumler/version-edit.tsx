@@ -65,6 +65,7 @@ export function VersionEdit({
         <DialogHeader>
           <DialogTitle>{customerName} - sürüm kaydı</DialogTitle>
         </DialogHeader>
+        {open ? (
         <form action={action} className="space-y-5">
           <FormSection title="Çekirdek">
             <div className="grid gap-3 sm:grid-cols-2">
@@ -128,6 +129,7 @@ export function VersionEdit({
             {pending ? "Kaydediliyor..." : "Kaydet"}
           </Button>
         </form>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

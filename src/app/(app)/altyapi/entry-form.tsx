@@ -83,6 +83,7 @@ export function EntryForm({
             {isEdit ? `${entry!.label} düzenle` : "Yeni altyapı kaydı"}
           </DialogTitle>
         </DialogHeader>
+        {open ? (
         <form action={action} className="space-y-5">
           <FormSection>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -159,6 +160,7 @@ export function EntryForm({
             {pending ? "Kaydediliyor..." : "Kaydet"}
           </Button>
         </form>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

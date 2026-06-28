@@ -67,6 +67,7 @@ export function CustomerDialog({
             {isEdit ? `${customer!.name} düzenle` : "Yeni müşteri"}
           </DialogTitle>
         </DialogHeader>
+        {open ? (
         <form action={formAction} className="space-y-5">
           <FormSection>
             <div className="space-y-1.5">
@@ -113,6 +114,7 @@ export function CustomerDialog({
             {pending ? "Kaydediliyor..." : "Kaydet"}
           </Button>
         </form>
+        ) : null}
       </DialogContent>
     </Dialog>
   );
