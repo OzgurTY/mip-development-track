@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
 import { decrypt, isEncrypted } from "@/lib/crypto/secret";
-import type { Attachment, InfraEntry, InfraField } from "./types";
+import type { Attachment, Credential, InfraEntry, InfraField } from "./types";
 
 export async function getInfraEntries(
   customerId: string,
@@ -41,7 +41,8 @@ export async function getInfraEntries(
       label: row.label,
       notes: row.notes,
       fields,
-      attachments: [],
+      attachments: [] as Attachment[],
+      credentials: [] as Credential[],
     };
   });
 
@@ -73,6 +74,37 @@ export async function getInfraEntries(
       byEntry.set(a.entry_id, list);
     }
     for (const e of entries) e.attachments = byEntry.get(e.id) ?? [];
+
+    const { data: creds } = await supabase
+      .from("infra_credentials")
+      .select("id, entry_id, username, secret, role, note")
+      .in("entry_id", entryIds)
+      .order("sort_order");
+    const credByEntry = new Map<string, Credential[]>();
+    for (const c of creds ?? []) {
+      let secret: string | null = null;
+      if (c.secret != null) {
+        if (isEncrypted(c.secret)) {
+          try {
+            secret = decrypt(c.secret);
+          } catch {
+            secret = "(çözülemedi)";
+          }
+        } else {
+          secret = String(c.secret);
+        }
+      }
+      const list = credByEntry.get(c.entry_id) ?? [];
+      list.push({
+        id: c.id,
+        username: c.username,
+        secret,
+        role: c.role,
+        note: c.note,
+      });
+      credByEntry.set(c.entry_id, list);
+    }
+    for (const e of entries) e.credentials = credByEntry.get(e.id) ?? [];
   }
 
   return entries;

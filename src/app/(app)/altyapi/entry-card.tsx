@@ -14,6 +14,8 @@ import {
   Paperclip,
   Upload,
   X,
+  Users,
+  Plus,
 } from "lucide-react";
 import { deleteInfraEntry } from "@/lib/infra/actions";
 import {
@@ -21,7 +23,13 @@ import {
   deleteAttachment,
   type UploadState,
 } from "@/lib/infra/attachment-actions";
+import {
+  addCredential,
+  deleteCredential,
+  type CredState,
+} from "@/lib/infra/credential-actions";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { INFRA_TYPES, type InfraEntry } from "@/lib/infra/types";
 import type { LucideIcon } from "lucide-react";
 
@@ -43,29 +51,47 @@ export function EntryCard({
 }) {
   const router = useRouter();
   const [shown, setShown] = useState<Record<string, boolean>>({});
-  const formRef = useRef<HTMLFormElement>(null);
+  const [credShown, setCredShown] = useState<Record<string, boolean>>({});
+  const fileFormRef = useRef<HTMLFormElement>(null);
+  const credFormRef = useRef<HTMLFormElement>(null);
+
   const upload = uploadAttachment.bind(null, entry.id);
   const [upState, uploadAction, uploading] = useActionState<
     UploadState,
     FormData
   >(upload, null);
-
   useEffect(() => {
     if (upState && "ok" in upState && upState.ok) {
-      formRef.current?.reset();
+      fileFormRef.current?.reset();
       router.refresh();
     }
   }, [upState, router]);
+
+  const addCred = addCredential.bind(null, entry.id);
+  const [credState, credAction, credPending] = useActionState<
+    CredState,
+    FormData
+  >(addCred, null);
+  useEffect(() => {
+    if (credState && "ok" in credState && credState.ok) {
+      credFormRef.current?.reset();
+      router.refresh();
+    }
+  }, [credState, router]);
 
   async function removeEntry() {
     if (!window.confirm(`"${entry.label}" silinsin mi?`)) return;
     await deleteInfraEntry(entry.id);
     router.refresh();
   }
-
   async function removeAttachment(id: string, name: string) {
     if (!window.confirm(`"${name}" eki silinsin mi?`)) return;
     await deleteAttachment(id);
+    router.refresh();
+  }
+  async function removeCredential(id: string, username: string) {
+    if (!window.confirm(`"${username}" kimliği silinsin mi?`)) return;
+    await deleteCredential(id);
     router.refresh();
   }
 
@@ -136,6 +162,113 @@ export function EntryCard({
         </p>
       )}
 
+      {/* Kimlikler (çoklu kullanıcı) */}
+      <div className="mt-4 space-y-2 border-t border-border/60 pt-3">
+        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <Users className="size-3.5" />
+          Kimlikler
+        </p>
+        {entry.credentials.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Kimlik yok.</p>
+        ) : (
+          <ul className="space-y-1.5">
+            {entry.credentials.map((c) => (
+              <li
+                key={c.id}
+                className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-xl bg-muted/40 px-3 py-2 text-sm"
+              >
+                <span className="font-mono font-medium">{c.username}</span>
+                {c.secret ? (
+                  <span className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
+                    {credShown[c.id] ? c.secret : "••••••••"}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCredShown((s) => ({ ...s, [c.id]: !s[c.id] }))
+                      }
+                      aria-label={credShown[c.id] ? "Gizle" : "Göster"}
+                      className="press text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {credShown[c.id] ? (
+                        <EyeOff className="size-3.5" />
+                      ) : (
+                        <Eye className="size-3.5" />
+                      )}
+                    </button>
+                  </span>
+                ) : null}
+                {c.role ? (
+                  <span className="rounded-md bg-accent px-1.5 py-0.5 text-xs font-medium text-accent-foreground">
+                    {c.role}
+                  </span>
+                ) : null}
+                {c.note ? (
+                  <span className="truncate text-xs text-muted-foreground">
+                    {c.note}
+                  </span>
+                ) : null}
+                {canDelete ? (
+                  <button
+                    type="button"
+                    onClick={() => removeCredential(c.id, c.username)}
+                    aria-label="Kimliği sil"
+                    className="press ml-auto text-muted-foreground transition-colors hover:text-destructive"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+        <form
+          ref={credFormRef}
+          action={credAction}
+          className="flex flex-wrap items-center gap-1.5"
+        >
+          <Input
+            name="username"
+            placeholder="Kullanıcı"
+            aria-label="Kullanıcı adı"
+            className="h-8 w-32"
+          />
+          <Input
+            name="password"
+            type="password"
+            placeholder="Parola"
+            autoComplete="new-password"
+            aria-label="Parola"
+            className="h-8 w-32"
+          />
+          <Input
+            name="role"
+            placeholder="Rol"
+            aria-label="Rol"
+            className="h-8 w-24"
+          />
+          <Input
+            name="note"
+            placeholder="Not"
+            aria-label="Not"
+            className="h-8 w-28"
+          />
+          <Button
+            type="submit"
+            size="sm"
+            variant="outline"
+            className="press gap-1"
+            disabled={credPending}
+          >
+            <Plus className="size-3.5" />
+            Ekle
+          </Button>
+        </form>
+        {credState && "error" in credState ? (
+          <p className="text-xs text-destructive">{credState.error}</p>
+        ) : null}
+      </div>
+
+      {/* Dosyalar */}
       <div className="mt-4 space-y-2 border-t border-border/60 pt-3">
         <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <Paperclip className="size-3.5" />
@@ -174,7 +307,7 @@ export function EntryCard({
           </ul>
         )}
         <form
-          ref={formRef}
+          ref={fileFormRef}
           action={uploadAction}
           className="flex items-center gap-2"
         >

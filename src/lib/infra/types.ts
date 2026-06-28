@@ -19,6 +19,14 @@ export type Attachment = {
   url: string | null;
 };
 
+export type Credential = {
+  id: string;
+  username: string;
+  secret: string | null; // decrypted server-side; masked in the UI
+  role: string | null;
+  note: string | null;
+};
+
 export type InfraEntry = {
   id: string;
   customer_id: string;
@@ -27,4 +35,5 @@ export type InfraEntry = {
   notes: string | null;
   fields: InfraField[];
   attachments: Attachment[];
+  credentials: Credential[];
 };
