@@ -3,54 +3,35 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-export type UploadState = { error: string } | { ok: true } | null;
-
-const MAX_BYTES = 20 * 1024 * 1024; // 20 MB
-
-function safeName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 120) || "dosya";
-}
-
-export async function uploadAttachment(
+// The file bytes are uploaded directly from the browser to Supabase Storage
+// (authenticated client, Storage RLS enforced), so they never pass through a
+// Server Action body. This action only records the metadata row.
+export async function recordAttachment(
   entryId: string,
-  _prev: UploadState,
-  formData: FormData,
-): Promise<UploadState> {
-  const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) {
-    return { error: "Dosya seçilmedi" };
-  }
-  if (file.size > MAX_BYTES) {
-    return { error: "Dosya 20 MB sınırını aşıyor" };
-  }
-
+  filePath: string,
+  fileName: string,
+  mime: string | null,
+  size: number,
+): Promise<{ error?: string }> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const clean = safeName(file.name);
-  const path = `${entryId}/${crypto.randomUUID()}-${clean}`;
-  const up = await supabase.storage
-    .from("infra-files")
-    .upload(path, file, { contentType: file.type || undefined, upsert: false });
-  if (up.error) return { error: "Yükleme başarısız" };
-
   const { error } = await supabase.from("infra_attachments").insert({
     entry_id: entryId,
-    file_path: path,
-    file_name: clean,
-    mime: file.type || null,
-    size: file.size,
+    file_path: filePath,
+    file_name: fileName,
+    mime,
+    size,
     uploaded_by: user?.id ?? null,
   });
   if (error) {
-    await supabase.storage.from("infra-files").remove([path]);
+    // Roll back the uploaded object so we don't leave an orphan.
+    await supabase.storage.from("infra-files").remove([filePath]);
     return { error: "Kayıt başarısız" };
   }
-
   revalidatePath("/altyapi");
-  return { ok: true };
+  return {};
 }
 
 export async function deleteAttachment(

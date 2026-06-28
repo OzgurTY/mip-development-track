@@ -21,15 +21,15 @@ import {
 } from "lucide-react";
 import { deleteInfraEntry } from "@/lib/infra/actions";
 import {
-  uploadAttachment,
+  recordAttachment,
   deleteAttachment,
-  type UploadState,
 } from "@/lib/infra/attachment-actions";
 import {
   addCredential,
   deleteCredential,
   type CredState,
 } from "@/lib/infra/credential-actions";
+import { createClient as createBrowserClient } from "@/lib/supabase/browser";
 import { EntryForm } from "./entry-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,20 +88,49 @@ export function EntryCard({
   const router = useRouter();
   const [shown, setShown] = useState<Record<string, boolean>>({});
   const [credShown, setCredShown] = useState<Record<string, boolean>>({});
-  const fileFormRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const credFormRef = useRef<HTMLFormElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [upErr, setUpErr] = useState<string | null>(null);
 
-  const upload = uploadAttachment.bind(null, entry.id);
-  const [upState, uploadAction, uploading] = useActionState<
-    UploadState,
-    FormData
-  >(upload, null);
-  useEffect(() => {
-    if (upState && "ok" in upState && upState.ok) {
-      fileFormRef.current?.reset();
-      router.refresh();
+  // Upload bytes directly from the browser to Storage (no Server Action body
+  // limit); then record the metadata row via a tiny action.
+  async function handleUpload() {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      setUpErr("Dosya seçilmedi");
+      return;
     }
-  }, [upState, router]);
+    setUpErr(null);
+    setUploading(true);
+    try {
+      const supabase = createBrowserClient();
+      const clean =
+        file.name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 120) || "dosya";
+      const path = `${entry.id}/${crypto.randomUUID()}-${clean}`;
+      const { error } = await supabase.storage
+        .from("infra-files")
+        .upload(path, file, {
+          contentType: file.type || undefined,
+          upsert: false,
+        });
+      if (error) throw error;
+      const res = await recordAttachment(
+        entry.id,
+        path,
+        clean,
+        file.type || null,
+        file.size,
+      );
+      if (res?.error) throw new Error(res.error);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      router.refresh();
+    } catch {
+      setUpErr("Yükleme başarısız");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   const addCred = addCredential.bind(null, entry.id);
   const [credState, credAction, credPending] = useActionState<
@@ -374,31 +403,26 @@ export function EntryCard({
             ))}
           </ul>
         )}
-        <form
-          ref={fileFormRef}
-          action={uploadAction}
-          className="flex items-center gap-2"
-        >
+        <div className="flex items-center gap-2">
           <input
+            ref={fileInputRef}
             type="file"
-            name="file"
             aria-label={`${entry.label} dosya`}
             className="text-xs file:mr-2 file:rounded-md file:border-0 file:bg-accent file:px-2 file:py-1 file:text-accent-foreground"
           />
           <Button
-            type="submit"
+            type="button"
             size="sm"
             variant="outline"
             className="press gap-1"
             disabled={uploading}
+            onClick={handleUpload}
           >
             <Upload className="size-3.5" />
             {uploading ? "Yükleniyor..." : "Yükle"}
           </Button>
-        </form>
-        {upState && "error" in upState && (
-          <p className="text-xs text-destructive">{upState.error}</p>
-        )}
+        </div>
+        {upErr ? <p className="text-xs text-destructive">{upErr}</p> : null}
       </div>
     </section>
   );
