@@ -28,12 +28,22 @@ export function buildColumns(
       accessorKey: "name",
       header: "Müşteri",
       cell: ({ row }) => (
-        <Link
-          href={`/musteriler/${row.original.id}`}
-          className="font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
-        >
-          {row.original.name}
-        </Link>
+        <>
+          <Link
+            href={`/musteriler/${row.original.id}`}
+            className="font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
+          >
+            {row.original.name}
+          </Link>
+          {canDelete && (
+            <span className="row-rail absolute inset-y-0 left-2 flex items-center">
+              <DeleteCustomerButton
+                id={row.original.id}
+                name={row.original.name}
+              />
+            </span>
+          )}
+        </>
       ),
     },
     {
@@ -59,18 +69,6 @@ export function buildColumns(
       id: `cf_${def.key}`,
       header: def.label,
       cell: ({ row }) => renderValue(row.original.custom_fields?.[def.key]),
-    });
-  }
-
-  if (canDelete) {
-    cols.push({
-      id: "actions",
-      header: "",
-      cell: ({ row }) => (
-        <div className="text-right">
-          <DeleteCustomerButton id={row.original.id} name={row.original.name} />
-        </div>
-      ),
     });
   }
 

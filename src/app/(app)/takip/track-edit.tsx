@@ -43,10 +43,13 @@ export function TrackEdit({ customerId, name, record, defs }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="outline" size="sm" className="press gap-1.5">
-            <Pencil className="size-3.5" />
-            Düzenle
-          </Button>
+          <button
+            type="button"
+            aria-label={`${name} takibini düzenle`}
+            className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <Pencil className="size-4" />
+          </button>
         }
       />
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">

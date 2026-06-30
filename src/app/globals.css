@@ -232,4 +232,38 @@
   .press:active {
     transform: scale(0.96);
   }
+
+  /*
+   * Row action rail: a left-gutter action cluster that is hidden at rest and
+   * revealed on row hover or keyboard focus. Only opacity/transform animate
+   * (compositor-friendly). On touch (no hover) it stays visible; reduced-motion
+   * drops the slide. The parent row must carry the `group` class.
+   */
+  .row-rail {
+    opacity: 0;
+    transform: translateX(-4px) scale(0.95);
+    pointer-events: none;
+    transition-property: opacity, transform;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+  .group:hover .row-rail,
+  .group:focus-within .row-rail {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    pointer-events: auto;
+  }
+  @media (hover: none) {
+    .row-rail {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .row-rail {
+      transform: none;
+      transition-duration: 60ms;
+    }
+  }
 }

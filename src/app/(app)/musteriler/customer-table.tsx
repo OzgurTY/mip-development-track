@@ -64,10 +64,14 @@ export function CustomerTable({ rows, canDelete, defs }: Props) {
           <TableHeader className="bg-muted/40">
             {table.getHeaderGroups().map((group) => (
               <TableRow key={group.id} className="hover:bg-transparent">
-                {group.headers.map((header) => (
+                {group.headers.map((header, idx) => (
                   <TableHead
                     key={header.id}
-                    className="h-11 px-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                    className={
+                      idx === 0 && canDelete
+                        ? "h-11 pr-4 pl-12 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                        : "h-11 px-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                    }
                   >
                     {flexRender(
                       header.column.columnDef.header,
@@ -95,9 +99,16 @@ export function CustomerTable({ rows, canDelete, defs }: Props) {
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className="hover:bg-accent/60">
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-4 py-2.5">
+                <TableRow key={row.id} className="group hover:bg-accent/60">
+                  {row.getVisibleCells().map((cell, idx) => (
+                    <TableCell
+                      key={cell.id}
+                      className={
+                        idx === 0 && canDelete
+                          ? "relative py-2.5 pr-4 pl-12"
+                          : "px-4 py-2.5"
+                      }
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

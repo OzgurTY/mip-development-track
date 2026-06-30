@@ -28,7 +28,7 @@ export function DeleteCustomerButton({ id, name }: Props) {
       onClick={handleDelete}
       disabled={pending}
       aria-label={`${name} sil`}
-      className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+      className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-50"
     >
       <Trash2 className="size-4" />
     </button>

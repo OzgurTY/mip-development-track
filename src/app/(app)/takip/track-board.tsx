@@ -76,19 +76,20 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
         <Table>
           <TableHeader className="bg-muted/40">
             <TableRow className="hover:bg-transparent [&_th]:h-11 [&_th]:px-4 [&_th]:text-xs [&_th]:font-semibold [&_th]:tracking-wide [&_th]:text-muted-foreground [&_th]:uppercase">
-              <TableHead>Müşteri</TableHead>
+              <TableHead>
+                {canEdit ? <span className="pl-8">Müşteri</span> : "Müşteri"}
+              </TableHead>
               <TableHead>Durum</TableHead>
               <TableHead>Proje</TableHead>
               <TableHead>Lead</TableHead>
               <TableHead>Sorumlular</TableHead>
               <TableHead>Son güncelleme</TableHead>
-              {canEdit && <TableHead />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={canEdit ? 7 : 6} className="p-0">
+                <TableCell colSpan={6} className="p-0">
                   <EmptyState
                     icon={ListChecks}
                     title="Eşleşen kayıt yok"
@@ -98,14 +99,33 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
               </TableRow>
             ) : (
               filtered.map((row) => (
-                <TableRow key={row.customerId} className="hover:bg-accent/60">
-                  <TableCell className="px-4 py-2.5">
+                <TableRow
+                  key={row.customerId}
+                  className="group hover:bg-accent/60"
+                >
+                  <TableCell
+                    className={
+                      canEdit
+                        ? "relative py-2.5 pr-4 pl-12"
+                        : "px-4 py-2.5"
+                    }
+                  >
                     <Link
                       href={`/musteriler/${row.customerId}`}
                       className="font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
                     >
                       {row.name}
                     </Link>
+                    {canEdit && (
+                      <span className="row-rail absolute inset-y-0 left-2 flex items-center">
+                        <TrackEdit
+                          customerId={row.customerId}
+                          name={row.name}
+                          record={row.record}
+                          defs={defs}
+                        />
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell className="px-4">
                     <StatusBadge status={row.record?.status ?? null} />
@@ -133,16 +153,6 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
                   <TableCell className="max-w-[24rem] truncate px-4 text-sm text-muted-foreground">
                     {row.lastUpdate ? row.lastUpdate.body : "-"}
                   </TableCell>
-                  {canEdit && (
-                    <TableCell className="px-4 text-right">
-                      <TrackEdit
-                        customerId={row.customerId}
-                        name={row.name}
-                        record={row.record}
-                        defs={defs}
-                      />
-                    </TableCell>
-                  )}
                 </TableRow>
               ))
             )}
