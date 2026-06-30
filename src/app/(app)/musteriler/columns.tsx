@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { Pencil } from "lucide-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DeleteCustomerButton } from "./delete-button";
+import { CustomerDialog } from "./customer-dialog";
 import type { FieldDefinition } from "@/lib/fields/types";
 
 export type CustomerRow = {
@@ -20,6 +22,7 @@ function renderValue(value: unknown): string {
 }
 
 export function buildColumns(
+  canEdit: boolean,
   canDelete: boolean,
   defs: FieldDefinition[],
 ): ColumnDef<CustomerRow>[] {
@@ -35,12 +38,29 @@ export function buildColumns(
           >
             {row.original.name}
           </Link>
-          {canDelete && (
-            <span className="row-rail absolute inset-y-0 left-2 flex items-center">
-              <DeleteCustomerButton
-                id={row.original.id}
-                name={row.original.name}
-              />
+          {(canEdit || canDelete) && (
+            <span className="row-rail absolute inset-y-0 left-2 flex items-center gap-1">
+              {canEdit && (
+                <CustomerDialog
+                  customer={row.original}
+                  defs={defs}
+                  trigger={
+                    <button
+                      type="button"
+                      aria-label={`${row.original.name} düzenle`}
+                      className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    >
+                      <Pencil className="size-4" />
+                    </button>
+                  }
+                />
+              )}
+              {canDelete && (
+                <DeleteCustomerButton
+                  id={row.original.id}
+                  name={row.original.name}
+                />
+              )}
             </span>
           )}
         </>

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ListChecks } from "lucide-react";
 import { TrackEdit } from "./track-edit";
+import { TrackDeleteButton } from "./track-delete";
 import { StatusBadge } from "@/components/status-badge";
 import { SearchInput } from "@/components/search-input";
 import { EmptyState } from "@/components/empty-state";
@@ -77,7 +78,7 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
           <TableHeader className="bg-muted/40">
             <TableRow className="hover:bg-transparent [&_th]:h-11 [&_th]:px-4 [&_th]:text-xs [&_th]:font-semibold [&_th]:tracking-wide [&_th]:text-muted-foreground [&_th]:uppercase">
               <TableHead>
-                {canEdit ? <span className="pl-8">Müşteri</span> : "Müşteri"}
+                {canEdit ? <span className="pl-16">Müşteri</span> : "Müşteri"}
               </TableHead>
               <TableHead>Durum</TableHead>
               <TableHead>Proje</TableHead>
@@ -106,7 +107,7 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
                   <TableCell
                     className={
                       canEdit
-                        ? "relative py-2.5 pr-4 pl-12"
+                        ? "relative py-2.5 pr-4 pl-20"
                         : "px-4 py-2.5"
                     }
                   >
@@ -117,13 +118,19 @@ export function TrackBoard({ rows, defs, canEdit }: Props) {
                       {row.name}
                     </Link>
                     {canEdit && (
-                      <span className="row-rail absolute inset-y-0 left-2 flex items-center">
+                      <span className="row-rail absolute inset-y-0 left-2 flex items-center gap-1">
                         <TrackEdit
                           customerId={row.customerId}
                           name={row.name}
                           record={row.record}
                           defs={defs}
                         />
+                        {row.record && (
+                          <TrackDeleteButton
+                            customerId={row.customerId}
+                            name={row.name}
+                          />
+                        )}
                       </span>
                     )}
                   </TableCell>

@@ -22,16 +22,30 @@ import type { FieldDefinition } from "@/lib/fields/types";
 
 type Props = {
   rows: CustomerRow[];
+  canEdit: boolean;
   canDelete: boolean;
   defs: FieldDefinition[];
 };
 
-export function CustomerTable({ rows, canDelete, defs }: Props) {
+export function CustomerTable({ rows, canEdit, canDelete, defs }: Props) {
   const [query, setQuery] = useState("");
   const columns = useMemo(
-    () => buildColumns(canDelete, defs),
-    [canDelete, defs],
+    () => buildColumns(canEdit, canDelete, defs),
+    [canEdit, canDelete, defs],
   );
+
+  // The first column reserves a left rail sized to its hover-revealed actions.
+  const railIcons = (canEdit ? 1 : 0) + (canDelete ? 1 : 0);
+  const headBase =
+    "text-xs font-semibold tracking-wide text-muted-foreground uppercase";
+  const firstHeadClass =
+    railIcons === 0
+      ? `h-11 px-4 ${headBase}`
+      : `h-11 pr-4 ${railIcons >= 2 ? "pl-20" : "pl-12"} ${headBase}`;
+  const firstCellClass =
+    railIcons === 0
+      ? "px-4 py-2.5"
+      : `relative py-2.5 pr-4 ${railIcons >= 2 ? "pl-20" : "pl-12"}`;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLocaleLowerCase("tr");
@@ -68,9 +82,9 @@ export function CustomerTable({ rows, canDelete, defs }: Props) {
                   <TableHead
                     key={header.id}
                     className={
-                      idx === 0 && canDelete
-                        ? "h-11 pr-4 pl-12 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
-                        : "h-11 px-4 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+                      idx === 0
+                        ? firstHeadClass
+                        : `h-11 px-4 ${headBase}`
                     }
                   >
                     {flexRender(
@@ -103,11 +117,7 @@ export function CustomerTable({ rows, canDelete, defs }: Props) {
                   {row.getVisibleCells().map((cell, idx) => (
                     <TableCell
                       key={cell.id}
-                      className={
-                        idx === 0 && canDelete
-                          ? "relative py-2.5 pr-4 pl-12"
-                          : "px-4 py-2.5"
-                      }
+                      className={idx === 0 ? firstCellClass : "px-4 py-2.5"}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>

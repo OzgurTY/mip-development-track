@@ -82,6 +82,21 @@ export async function saveTrackRecord(
   return { ok: true };
 }
 
+export async function deleteTrackRecord(
+  customerId: string,
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("track_records")
+    .delete()
+    .eq("customer_id", customerId);
+  if (error) return { error: "Silme başarısız" };
+
+  revalidatePath("/takip");
+  revalidatePath("/takip/toplanti");
+  return {};
+}
+
 export async function addTrackUpdate(
   customerId: string,
   _prev: SaveState,
