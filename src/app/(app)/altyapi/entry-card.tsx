@@ -34,6 +34,7 @@ import { EntryForm } from "./entry-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CopyButton } from "@/components/copy-button";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import {
   type InfraEntry,
   type Credential,
@@ -86,6 +87,7 @@ export function EntryCard({
   types: InfraType[];
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [shown, setShown] = useState<Record<string, boolean>>({});
   const [credShown, setCredShown] = useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,17 +147,45 @@ export function EntryCard({
   }, [credState, router]);
 
   async function removeEntry() {
-    if (!window.confirm(`"${entry.label}" silinsin mi?`)) return;
+    const ok = await confirm({
+      title: "Kaydı sil",
+      description: (
+        <>
+          <strong>{entry.label}</strong> kaydı, tüm kimlikleri ve ekleriyle
+          birlikte kalıcı olarak silinecek. Bu işlem geri alınamaz.
+        </>
+      ),
+      confirmLabel: "Sil",
+    });
+    if (!ok) return;
     await deleteInfraEntry(entry.id);
     router.refresh();
   }
   async function removeAttachment(id: string, name: string) {
-    if (!window.confirm(`"${name}" eki silinsin mi?`)) return;
+    const ok = await confirm({
+      title: "Eki sil",
+      description: (
+        <>
+          <strong>{name}</strong> eki kalıcı olarak silinecek.
+        </>
+      ),
+      confirmLabel: "Sil",
+    });
+    if (!ok) return;
     await deleteAttachment(id);
     router.refresh();
   }
   async function removeCredential(id: string, username: string) {
-    if (!window.confirm(`"${username}" kimliği silinsin mi?`)) return;
+    const ok = await confirm({
+      title: "Kimliği sil",
+      description: (
+        <>
+          <strong>{username}</strong> kimliği kalıcı olarak silinecek.
+        </>
+      ),
+      confirmLabel: "Sil",
+    });
+    if (!ok) return;
     await deleteCredential(id);
     router.refresh();
   }

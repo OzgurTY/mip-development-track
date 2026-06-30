@@ -12,6 +12,7 @@ import { FieldList } from "./field-list";
 import { FieldForm } from "./field-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import type { FieldDefinition } from "@/lib/fields/types";
 import type { InfraType } from "@/lib/infra/types";
 
@@ -23,6 +24,7 @@ export function InfraFieldAdmin({
   fieldsByType: Record<string, FieldDefinition[]>;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [active, setActive] = useState(types[0]?.key ?? "");
   const [adding, setAdding] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -41,13 +43,18 @@ export function InfraFieldAdmin({
   const current = types.find((t) => t.key === active) ?? types[0];
   const fields = current ? (fieldsByType[current.key] ?? []) : [];
 
-  function removeType(t: InfraType) {
-    if (
-      !window.confirm(
-        `"${t.label}" tipi kaldırılsın mı? (mevcut alan/kayıtlar silinmez, sadece tip listesinden çıkar)`,
-      )
-    )
-      return;
+  async function removeType(t: InfraType) {
+    const ok = await confirm({
+      title: "Tipi kaldır",
+      description: (
+        <>
+          <strong>{t.label}</strong> tipi listeden çıkarılacak. Mevcut alan ve
+          kayıtlar silinmez.
+        </>
+      ),
+      confirmLabel: "Kaldır",
+    });
+    if (!ok) return;
     startTransition(async () => {
       await deleteInfraType(t.id);
       if (active === t.key) {

@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { deleteTrackRecord } from "@/lib/track/actions";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type Props = {
   customerId: string;
@@ -13,9 +14,20 @@ type Props = {
 export function TrackDeleteButton({ customerId, name }: Props) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const confirm = useConfirm();
 
-  function handleDelete() {
-    if (!window.confirm(`"${name}" için takip kaydı silinsin mi?`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: "Takip kaydını sil",
+      description: (
+        <>
+          <strong>{name}</strong> için takip kaydı silinecek. Müşteri ve geçmiş
+          güncellemeler kalır.
+        </>
+      ),
+      confirmLabel: "Sil",
+    });
+    if (!ok) return;
     startTransition(async () => {
       await deleteTrackRecord(customerId);
       router.refresh();

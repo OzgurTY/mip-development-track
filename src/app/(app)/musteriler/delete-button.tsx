@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { deleteCustomer } from "./actions";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type Props = {
   id: string;
@@ -13,9 +14,20 @@ type Props = {
 export function DeleteCustomerButton({ id, name }: Props) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const confirm = useConfirm();
 
-  function handleDelete() {
-    if (!window.confirm(`"${name}" silinsin mi?`)) return;
+  async function handleDelete() {
+    const ok = await confirm({
+      title: "Müşteriyi sil",
+      description: (
+        <>
+          <strong>{name}</strong> ve bağlı tüm kayıtları kalıcı olarak
+          silinecek. Bu işlem geri alınamaz.
+        </>
+      ),
+      confirmLabel: "Sil",
+    });
+    if (!ok) return;
     startTransition(async () => {
       await deleteCustomer(id);
       router.refresh();

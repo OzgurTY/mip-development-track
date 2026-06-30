@@ -5,6 +5,7 @@ import {
   Geist_Mono,
 } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -48,7 +49,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          {children}
+          <ConfirmProvider>{children}</ConfirmProvider>
         </ThemeProvider>
       </body>
     </html>

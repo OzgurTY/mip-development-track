@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { deleteFieldDefinition } from "./actions";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import {
   Table,
   TableBody,
@@ -27,9 +28,20 @@ const TYPE_LABEL: Record<string, string> = {
 export function FieldList({ defs }: { defs: FieldDefinition[] }) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const confirm = useConfirm();
 
-  function remove(id: string, label: string) {
-    if (!window.confirm(`"${label}" alanı silinsin mi?`)) return;
+  async function remove(id: string, label: string) {
+    const ok = await confirm({
+      title: "Alanı sil",
+      description: (
+        <>
+          <strong>{label}</strong> alanı ve tüm kayıtlardaki bu alana girilmiş
+          değerler kaldırılacak. Bu işlem geri alınamaz.
+        </>
+      ),
+      confirmLabel: "Sil",
+    });
+    if (!ok) return;
     startTransition(async () => {
       await deleteFieldDefinition(id);
       router.refresh();
