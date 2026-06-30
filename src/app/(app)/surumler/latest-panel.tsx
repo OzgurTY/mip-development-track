@@ -6,9 +6,9 @@ import { Gauge, Pencil, Check, X } from "lucide-react";
 import { saveComponentLatest, type SaveState } from "@/lib/versions/actions";
 import { BentoCard } from "@/components/bento-card";
 import { Input } from "@/components/ui/input";
-import type { ComponentLatest } from "@/lib/versions/types";
+import type { CatalogComponent } from "@/lib/versions/catalog";
 
-function RefChip({ component }: { component: ComponentLatest }) {
+function RefChip({ component }: { component: CatalogComponent }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const save = saveComponentLatest.bind(null, component.key);
@@ -29,10 +29,12 @@ function RefChip({ component }: { component: ComponentLatest }) {
         action={action}
         className="flex items-center gap-1.5 rounded-xl bg-muted/60 py-1 pr-1 pl-3"
       >
+        <input type="hidden" name="label" value={component.label} />
+        <input type="hidden" name="kind" value={component.kind} />
         <span className="text-xs text-muted-foreground">{component.label}</span>
         <Input
           name="latest_version"
-          defaultValue={component.latest_version ?? ""}
+          defaultValue={component.latest ?? ""}
           autoFocus
           className="h-7 w-28 font-mono"
         />
@@ -60,7 +62,7 @@ function RefChip({ component }: { component: ComponentLatest }) {
     <div className="group flex items-center gap-2 rounded-xl bg-muted/50 py-1.5 pr-1.5 pl-3 ring-1 ring-foreground/[0.04]">
       <span className="text-xs text-muted-foreground">{component.label}</span>
       <span className="font-mono text-sm font-medium tabular-nums">
-        {component.latest_version ?? "-"}
+        {component.latest ?? "-"}
       </span>
       <button
         type="button"
@@ -74,7 +76,11 @@ function RefChip({ component }: { component: ComponentLatest }) {
   );
 }
 
-export function LatestPanel({ components }: { components: ComponentLatest[] }) {
+export function LatestPanel({
+  components,
+}: {
+  components: CatalogComponent[];
+}) {
   return (
     <BentoCard
       title="Güncel sürüm referansı"

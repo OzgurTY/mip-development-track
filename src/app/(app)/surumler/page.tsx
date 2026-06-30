@@ -2,8 +2,9 @@ import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
 import { getVersionMatrix, getComponentLatest } from "@/lib/versions/queries";
+import { buildVersionCatalog } from "@/lib/versions/catalog";
 import { PageHeader } from "@/components/page-header";
-import { VersionMatrix } from "./version-matrix";
+import { VersionBoard } from "./version-board";
 import { VersionEdit } from "./version-edit";
 import { LatestPanel } from "./latest-panel";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ export default async function VersionsPage() {
   const isAdmin = role === "admin";
   const customers = customersResult.data ?? [];
   const firstCustomer = customers[0];
+  const catalog = buildVersionCatalog(defs, components);
 
   return (
     <div className="space-y-6">
@@ -49,12 +51,13 @@ export default async function VersionsPage() {
           />
         )}
       </PageHeader>
-      {isAdmin && <LatestPanel components={components} />}
-      <VersionMatrix
+      {isAdmin && <LatestPanel components={catalog.components} />}
+      <VersionBoard
         rows={rows}
-        components={components}
+        catalog={catalog}
         defs={defs}
         canEdit={canEdit}
+        isAdmin={isAdmin}
       />
     </div>
   );

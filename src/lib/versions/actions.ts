@@ -99,14 +99,22 @@ export async function saveComponentLatest(
   formData: FormData,
 ): Promise<SaveState> {
   const latest = String(formData.get("latest_version") ?? "").trim();
+  const label = String(formData.get("label") ?? "").trim();
+  const kind = String(formData.get("kind") ?? "semver").trim();
+  const safeKind = kind === "date" ? "date" : "semver";
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("component_latest")
-    .update({
+  // Upsert so a catalog component without an existing reference row can still
+  // get a latest version (lights up drift coloring on the now-visible column).
+  const { error } = await supabase.from("component_latest").upsert(
+    {
+      key,
+      label: label || key,
+      kind: safeKind,
       latest_version: latest || null,
       updated_at: new Date().toISOString(),
-    })
-    .eq("key", key);
+    },
+    { onConflict: "key" },
+  );
   if (error) return { error: "Güncellenemedi" };
   revalidatePath("/surumler");
   return { ok: true };
