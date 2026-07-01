@@ -26,7 +26,7 @@ export default function LoginPage() {
 
       <div className="bento animate-in fade-in zoom-in-95 relative w-full max-w-sm p-7 duration-500">
         <div className="mb-7 flex flex-col items-center gap-2.5 text-center">
-          <BrandLogo className="h-12 w-auto" />
+          <BrandLogo className="h-10 w-auto" />
           <p className="text-sm text-muted-foreground">
             Development Track giriş
           </p>
