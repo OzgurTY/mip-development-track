@@ -95,14 +95,21 @@ export default async function CustomerDetailPage({
               <HeroStat icon={TrendingDown} label="Geride" value={totalBehind} accent="var(--accent-rose)" />
               <HeroStat icon={Clock} label="Son not" value={lastUpdate ?? "-"} accent="var(--accent-emerald)" small={!!lastUpdate} />
             </div>
-            {canEdit ? (
-              <CustomerDialog customer={detail.customer} defs={customerDefs} />
-            ) : null}
-            {role === "admin" ? (
-              <DeleteCustomerAction
-                id={detail.customer.id}
-                name={detail.customer.name}
-              />
+            {canEdit || role === "admin" ? (
+              <div className="flex flex-col gap-2">
+                {canEdit ? (
+                  <CustomerDialog
+                    customer={detail.customer}
+                    defs={customerDefs}
+                  />
+                ) : null}
+                {role === "admin" ? (
+                  <DeleteCustomerAction
+                    id={detail.customer.id}
+                    name={detail.customer.name}
+                  />
+                ) : null}
+              </div>
             ) : null}
           </div>
         </div>
