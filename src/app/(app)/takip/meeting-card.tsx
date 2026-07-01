@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { addTrackUpdate, type SaveState } from "@/lib/track/actions";
 import { UpdateList } from "./update-list";
+import { ExportLinks } from "./export-links";
 import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,13 +45,16 @@ export function MeetingCard({ row, updates, defaultWeek, canEdit }: Props) {
           </h2>
           <StatusBadge status={row.record?.status ?? null} />
         </div>
-        <Link
-          href={`/musteriler/${row.customerId}`}
-          className="press inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Detay
-          <ArrowUpRight className="size-4" />
-        </Link>
+        <div className="flex items-center gap-2.5">
+          <ExportLinks customerId={row.customerId} compact />
+          <Link
+            href={`/musteriler/${row.customerId}`}
+            className="press inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Detay
+            <ArrowUpRight className="size-4" />
+          </Link>
+        </div>
       </header>
       {row.record?.project ? (
         <p className="mt-1 text-sm text-muted-foreground">{row.record.project}</p>

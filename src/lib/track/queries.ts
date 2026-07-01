@@ -33,6 +33,46 @@ export async function getTrackBoard(): Promise<BoardRow[]> {
   }));
 }
 
+export type ExportUpdate = {
+  customerId: string;
+  customerName: string;
+  week_date: string;
+  body: string;
+  created_at: string;
+};
+
+// All updates (or one customer's), joined with customer names, sorted by
+// customer then date. Used by the export route.
+export async function getUpdatesForExport(
+  customerId?: string,
+): Promise<ExportUpdate[]> {
+  const supabase = await createClient();
+  const updatesQuery = supabase
+    .from("track_updates")
+    .select("customer_id, week_date, body, created_at");
+  const [customers, updates] = await Promise.all([
+    supabase.from("customers").select("id, name"),
+    customerId ? updatesQuery.eq("customer_id", customerId) : updatesQuery,
+  ]);
+
+  const nameById = new Map<string, string>();
+  for (const c of customers.data ?? []) nameById.set(c.id, c.name);
+
+  return (updates.data ?? [])
+    .map((u) => ({
+      customerId: u.customer_id as string,
+      customerName: nameById.get(u.customer_id as string) ?? "?",
+      week_date: u.week_date as string,
+      body: (u.body as string) ?? "",
+      created_at: u.created_at as string,
+    }))
+    .sort(
+      (a, b) =>
+        a.customerName.localeCompare(b.customerName, "tr") ||
+        a.week_date.localeCompare(b.week_date),
+    );
+}
+
 export async function getCustomerUpdates(
   customerId: string,
 ): Promise<TrackUpdate[]> {
