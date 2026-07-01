@@ -47,3 +47,12 @@ inputs/
 # playwright
 test-results/
 playwright-report/
+
+# not shipped in the deployable repo (kept locally): planning docs, DB
+# migrations, and the test suite / test tooling
+docs/superpowers/
+supabase/migrations/
+tests/
+vitest.config.ts
+vitest.setup.ts
+playwright.config.ts
