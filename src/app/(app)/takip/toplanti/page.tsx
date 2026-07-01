@@ -3,7 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getTrackBoard, getCustomerUpdates } from "@/lib/track/queries";
 import { MeetingCard } from "../meeting-card";
-import { ExportLinks } from "../export-links";
+import { ExportControl } from "../export-control";
 import { PageHeader } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import type { TrackUpdate } from "@/lib/track/types";
@@ -42,7 +42,7 @@ export default async function MeetingPage() {
         subtitle={`Alfabetik sırayla ${rows.length} müşteri`}
       >
         <div className="flex flex-wrap items-center gap-2.5">
-          <ExportLinks label="Tümünü dışa aktar" />
+          <ExportControl label="Tümünü dışa aktar" />
           <Link
             href="/takip"
             className={buttonVariants({ variant: "outline", size: "lg" }) + " press h-10 gap-2"}
