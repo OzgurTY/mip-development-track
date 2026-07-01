@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
-// Full MDP Integration Platform wordmark. The white source export came empty,
-// so we ship both color variants and swap by theme (the file is monochrome).
+// Full MDP Integration Platform wordmark. Monochrome artwork, so we ship a black
+// and a white variant (white is the black paths recolored) and swap by theme.
 export function BrandLogo({ className }: { className?: string }) {
   return (
     <>

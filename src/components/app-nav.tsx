@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { BrandMark } from "@/components/brand";
+import { BrandLogo } from "@/components/brand";
 import type { Role } from "@/lib/auth/roles";
 
 type Props = {
@@ -55,7 +55,7 @@ export function AppNav({ role, name }: Props) {
     <nav className="sticky top-0 flex h-dvh flex-col gap-1 border-r border-sidebar-border bg-sidebar p-3">
       <div className="mb-4 flex items-center justify-between gap-2 px-1 pt-1.5">
         <Link href="/" className="press flex items-center" aria-label="Genel Bakış">
-          <BrandMark className="h-7 w-auto" />
+          <BrandLogo className="h-8 w-auto" />
         </Link>
         <ThemeToggle />
       </div>
