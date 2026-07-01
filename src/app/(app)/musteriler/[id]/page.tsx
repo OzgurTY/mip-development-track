@@ -9,6 +9,7 @@ import { getFieldDefinitions } from "@/lib/fields/queries";
 import { rowDrift } from "@/lib/dashboard/compute";
 import { CustomerDetailView } from "./customer-detail";
 import { CustomerDialog } from "../customer-dialog";
+import { DeleteCustomerAction } from "./delete-customer";
 import { StatusBadge } from "@/components/status-badge";
 import type { InfraEntry } from "@/lib/infra/types";
 
@@ -96,6 +97,12 @@ export default async function CustomerDetailPage({
             </div>
             {canEdit ? (
               <CustomerDialog customer={detail.customer} defs={customerDefs} />
+            ) : null}
+            {role === "admin" ? (
+              <DeleteCustomerAction
+                id={detail.customer.id}
+                name={detail.customer.name}
+              />
             ) : null}
           </div>
         </div>
