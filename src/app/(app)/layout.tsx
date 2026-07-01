@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppNav } from "@/components/app-nav";
+import { Toaster } from "@/components/ui/sonner";
 import type { Role } from "@/lib/auth/roles";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
@@ -26,6 +27,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <main className="min-w-0 px-6 py-8 md:px-10 md:py-10">
         <div className="mx-auto w-full max-w-[1400px]">{children}</div>
       </main>
+      <Toaster />
     </div>
   );
 }

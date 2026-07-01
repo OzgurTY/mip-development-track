@@ -40,7 +40,7 @@ export function AppNav({ role, name }: Props) {
       ? [{ href: "/altyapi", label: "Altyapı", icon: ServerCog }]
       : []),
     ...(role === "admin"
-      ? [{ href: "/yonetim/alanlar", label: "Yönetim", icon: Settings2 }]
+      ? [{ href: "/yonetim", label: "Yönetim", icon: Settings2 }]
       : []),
   ];
 

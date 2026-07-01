@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
 import { getInfraTypes } from "@/lib/infra/type-queries";
 import { PageHeader } from "@/components/page-header";
+import { AdminSubnav } from "../admin-subnav";
 import {
   FieldAdminTabs,
   type FlatGroup,
@@ -70,6 +71,7 @@ export default async function FieldAdminPage() {
         title="Yönetim"
         subtitle="Her modülün alan yapısını buradan yönet."
       />
+      <AdminSubnav />
       <FieldAdminTabs flat={flat} infra={infra} />
     </div>
   );
