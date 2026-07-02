@@ -4,16 +4,24 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { can, type Role } from "@/lib/auth/roles";
-import { checkDeleteUser, checkRoleChange, type ManagedUser } from "./guards";
+import {
+  checkDeleteUser,
+  checkTierChange,
+  tierToStored,
+  userTier,
+  type ManagedUser,
+} from "./guards";
 
 export type SaveState = { error: string } | { ok: true } | null;
 
-const ROLES = ["viewer", "editor", "admin"] as const;
+const TIERS = ["viewer", "editor", "admin", "superadmin"] as const;
 
-// Every action re-verifies the CALLER is an admin server-side; never trust the
-// client-side route gate. Returns the caller's id (needed for lockout guards).
-async function requireAdmin(): Promise<{ id: string } | { error: string }> {
+type Caller = { id: string; isSuperadmin: boolean };
+type UserLite = Pick<ManagedUser, "id" | "role" | "is_superadmin">;
+
+// Every action re-verifies the caller is at least admin server-side and reports
+// whether they are a superadmin (needed for the credential-level gates).
+async function requireAdmin(): Promise<Caller | { error: string }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -21,25 +29,26 @@ async function requireAdmin(): Promise<{ id: string } | { error: string }> {
   if (!user) return { error: "Oturum bulunamadı." };
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, is_superadmin")
     .eq("id", user.id)
     .single();
-  const role = (profile?.role ?? "viewer") as Role;
-  if (!can(role, "user:manage")) return { error: "Bu işlem için yetkiniz yok." };
-  return { id: user.id };
+  const isSuperadmin = profile?.is_superadmin === true;
+  const isAdmin = profile?.role === "admin" || isSuperadmin;
+  if (!isAdmin) return { error: "Bu işlem için yetkiniz yok." };
+  return { id: user.id, isSuperadmin };
 }
 
-async function loadUsers(): Promise<Pick<ManagedUser, "id" | "role">[]> {
+async function loadUsers(): Promise<UserLite[]> {
   const admin = createAdminClient();
-  const { data } = await admin.from("profiles").select("id, role");
-  return (data ?? []) as Pick<ManagedUser, "id" | "role">[];
+  const { data } = await admin.from("profiles").select("id, role, is_superadmin");
+  return (data ?? []) as UserLite[];
 }
 
 const createSchema = z.object({
   email: z.string().trim().toLowerCase().email("Geçerli bir e-posta girin"),
   password: z.string().min(8, "Parola en az 8 karakter olmalı"),
   full_name: z.string().trim().min(1, "Ad Soyad gerekli").max(120),
-  role: z.enum(ROLES),
+  tier: z.enum(TIERS),
 });
 
 export async function createUser(
@@ -48,22 +57,27 @@ export async function createUser(
 ): Promise<SaveState> {
   const auth = await requireAdmin();
   if ("error" in auth) return { error: auth.error };
+  // Creating an account issues a password, so it is a superadmin-only action.
+  if (!auth.isSuperadmin) {
+    return { error: "Kullanıcı oluşturma yalnızca süper yöneticide." };
+  }
 
   const parsed = createSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
     full_name: formData.get("full_name"),
-    role: formData.get("role"),
+    tier: formData.get("tier"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Geçersiz giriş" };
   }
+  const { role, is_superadmin } = tierToStored(parsed.data.tier);
 
   const admin = createAdminClient();
   const { data, error } = await admin.auth.admin.createUser({
     email: parsed.data.email,
     password: parsed.data.password,
-    email_confirm: true, // internal accounts: no verification email, active at once
+    email_confirm: true,
     user_metadata: { full_name: parsed.data.full_name },
   });
   if (error || !data.user) {
@@ -75,11 +89,9 @@ export async function createUser(
     };
   }
 
-  // The handle_new_user trigger already inserted the profile (role=viewer);
-  // apply the requested role and ensure the name is set.
   const { error: profileError } = await admin
     .from("profiles")
-    .update({ role: parsed.data.role, full_name: parsed.data.full_name })
+    .update({ role, is_superadmin, full_name: parsed.data.full_name })
     .eq("id", data.user.id);
   if (profileError) return { error: "Rol atanamadı." };
 
@@ -89,7 +101,7 @@ export async function createUser(
 
 const updateSchema = z.object({
   full_name: z.string().trim().min(1, "Ad Soyad gerekli").max(120),
-  role: z.enum(ROLES),
+  tier: z.enum(TIERS),
   password: z
     .union([z.string().min(8, "Parola en az 8 karakter olmalı"), z.literal("")])
     .optional(),
@@ -105,7 +117,7 @@ export async function updateUser(
 
   const parsed = updateSchema.safeParse({
     full_name: formData.get("full_name"),
-    role: formData.get("role"),
+    tier: formData.get("tier"),
     password: formData.get("password") ?? "",
   });
   if (!parsed.success) {
@@ -113,17 +125,42 @@ export async function updateUser(
   }
 
   const users = await loadUsers();
-  const guard = checkRoleChange(users, auth.id, userId, parsed.data.role);
+  const target = users.find((u) => u.id === userId);
+  if (!target) return { error: "Kullanıcı bulunamadı." };
+
+  // Only a superadmin can grant/revoke the superadmin tier. A non-superadmin
+  // may not touch a superadmin's tier at all, and may not promote to superadmin.
+  let role = target.role;
+  let is_superadmin = target.is_superadmin;
+  if (auth.isSuperadmin) {
+    ({ role, is_superadmin } = tierToStored(parsed.data.tier));
+  } else if (!target.is_superadmin) {
+    if (parsed.data.tier === "superadmin") {
+      return { error: "Süper yönetici atama yalnızca süper yöneticide." };
+    }
+    ({ role, is_superadmin } = tierToStored(parsed.data.tier));
+  }
+
+  const guard = checkTierChange(
+    users,
+    auth.id,
+    userId,
+    userTier({ role, is_superadmin }),
+  );
   if (!guard.ok) return { error: guard.error };
 
   const admin = createAdminClient();
   const { error } = await admin
     .from("profiles")
-    .update({ role: parsed.data.role, full_name: parsed.data.full_name })
+    .update({ role, is_superadmin, full_name: parsed.data.full_name })
     .eq("id", userId);
   if (error) return { error: "Güncellenemedi." };
 
+  // Resetting another user's password is a superadmin-only action.
   if (parsed.data.password) {
+    if (!auth.isSuperadmin) {
+      return { error: "Parola sıfırlama yalnızca süper yöneticide." };
+    }
     const { error: pwError } = await admin.auth.admin.updateUserById(userId, {
       password: parsed.data.password,
     });
@@ -141,6 +178,10 @@ export async function deleteUser(
   if ("error" in auth) return { error: auth.error };
 
   const users = await loadUsers();
+  const target = users.find((u) => u.id === userId);
+  if (target?.is_superadmin && !auth.isSuperadmin) {
+    return { error: "Süper yöneticiyi yalnızca süper yönetici silebilir." };
+  }
   const guard = checkDeleteUser(users, auth.id, userId);
   if (!guard.ok) return { error: guard.error };
 

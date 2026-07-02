@@ -12,15 +12,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Role } from "@/lib/auth/roles";
-import type { ManagedUser } from "@/lib/users/guards";
+import { userTier, type ManagedUser, type Tier } from "@/lib/users/guards";
 
 type Props = {
   users: ManagedUser[];
   currentUserId: string;
+  isSuperadmin: boolean;
 };
 
-export function UserTable({ users, currentUserId }: Props) {
+export function UserTable({ users, currentUserId, isSuperadmin }: Props) {
   return (
     <div className="bento overflow-hidden">
       <Table>
@@ -46,12 +46,14 @@ export function UserTable({ users, currentUserId }: Props) {
           ) : (
             users.map((user) => {
               const isSelf = user.id === currentUserId;
+              const canDelete = !isSelf && (isSuperadmin || !user.is_superadmin);
               return (
                 <TableRow key={user.id} className="group hover:bg-accent/60">
                   <TableCell className="relative py-3 pr-4 pl-20">
                     <span className="row-rail absolute inset-y-0 left-2 flex items-center gap-1">
                       <UserDialog
                         user={user}
+                        isSuperadmin={isSuperadmin}
                         trigger={
                           <button
                             type="button"
@@ -62,7 +64,7 @@ export function UserTable({ users, currentUserId }: Props) {
                           </button>
                         }
                       />
-                      {!isSelf ? (
+                      {canDelete ? (
                         <UserDeleteButton
                           id={user.id}
                           name={user.full_name ?? user.email}
@@ -86,7 +88,7 @@ export function UserTable({ users, currentUserId }: Props) {
                     {user.email}
                   </TableCell>
                   <TableCell className="px-4 py-3">
-                    <RoleBadge role={user.role} />
+                    <TierBadge tier={userTier(user)} />
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm tabular-nums text-muted-foreground">
                     {user.created_at.slice(0, 10)}
@@ -101,22 +103,41 @@ export function UserTable({ users, currentUserId }: Props) {
   );
 }
 
-const ROLE_LABEL: Record<Role, string> = {
-  admin: "Yönetici",
-  editor: "Editör",
+const TIER_LABEL: Record<Tier, string> = {
   viewer: "Görüntüleyici",
+  editor: "Editör",
+  admin: "Yönetici",
+  superadmin: "Süper Yönetici",
 };
 
-function RoleBadge({ role }: { role: Role }) {
-  if (role === "admin") {
+function TierBadge({ tier }: { tier: Tier }) {
+  if (tier === "superadmin") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-        <span className="size-1.5 rounded-full bg-primary" />
-        {ROLE_LABEL.admin}
+      <span
+        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold"
+        style={{
+          background:
+            "color-mix(in oklch, var(--accent-amber) 18%, transparent)",
+          color: "var(--accent-amber)",
+        }}
+      >
+        <span
+          className="size-1.5 rounded-full"
+          style={{ background: "var(--accent-amber)" }}
+        />
+        {TIER_LABEL.superadmin}
       </span>
     );
   }
-  if (role === "editor") {
+  if (tier === "admin") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+        <span className="size-1.5 rounded-full bg-primary" />
+        {TIER_LABEL.admin}
+      </span>
+    );
+  }
+  if (tier === "editor") {
     return (
       <span
         className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium"
@@ -129,14 +150,14 @@ function RoleBadge({ role }: { role: Role }) {
           className="size-1.5 rounded-full"
           style={{ background: "var(--accent-sky)" }}
         />
-        {ROLE_LABEL.editor}
+        {TIER_LABEL.editor}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
       <span className="size-1.5 rounded-full bg-muted-foreground/50" />
-      {ROLE_LABEL.viewer}
+      {TIER_LABEL.viewer}
     </span>
   );
 }

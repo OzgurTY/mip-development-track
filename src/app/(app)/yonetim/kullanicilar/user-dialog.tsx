@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import type { ReactElement } from "react";
 import { UserPlus } from "lucide-react";
 import { createUser, updateUser, type SaveState } from "@/lib/users/actions";
+import { userTier, type Tier } from "@/lib/users/guards";
 import { FormSection } from "@/components/form-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,18 +19,21 @@ import {
 } from "@/components/ui/dialog";
 import type { ManagedUser } from "@/lib/users/guards";
 
-const ROLE_OPTIONS = [
-  { value: "viewer", label: "Görüntüleyici" },
-  { value: "editor", label: "Editör" },
-  { value: "admin", label: "Yönetici" },
-];
+const TIER_LABEL: Record<Tier, string> = {
+  viewer: "Görüntüleyici",
+  editor: "Editör",
+  admin: "Yönetici",
+  superadmin: "Süper Yönetici",
+};
 
 type Props = {
   user?: ManagedUser;
+  // Whether the current (acting) user is a superadmin.
+  isSuperadmin: boolean;
   trigger?: ReactElement;
 };
 
-export function UserDialog({ user, trigger }: Props) {
+export function UserDialog({ user, isSuperadmin, trigger }: Props) {
   const isEdit = Boolean(user);
   const [open, setOpen] = useState(false);
   const action = isEdit ? updateUser.bind(null, user!.id) : createUser;
@@ -41,6 +45,16 @@ export function UserDialog({ user, trigger }: Props) {
   useEffect(() => {
     if (state && "ok" in state && state.ok) setOpen(false);
   }, [state]);
+
+  const currentTier: Tier = user ? userTier(user) : "viewer";
+  // Non-superadmins cannot change a superadmin's tier or grant superadmin.
+  const tierLocked = !isSuperadmin && user?.is_superadmin === true;
+  const tierOptions: Tier[] =
+    isSuperadmin || currentTier === "superadmin"
+      ? ["viewer", "editor", "admin", "superadmin"]
+      : ["viewer", "editor", "admin"];
+  // Only a superadmin can set or reset passwords.
+  const canSetPassword = isSuperadmin;
 
   const defaultTrigger = (
     <Button size="lg" className="press h-10 gap-2">
@@ -88,34 +102,49 @@ export function UserDialog({ user, trigger }: Props) {
                   />
                 )}
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div
+                className={
+                  canSetPassword ? "grid gap-3 sm:grid-cols-2" : "space-y-1.5"
+                }
+              >
                 <div className="space-y-1.5">
-                  <Label htmlFor="role">Rol</Label>
-                  <Select
-                    id="role"
-                    name="role"
-                    defaultValue={user?.role ?? "viewer"}
-                  >
-                    {ROLE_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </Select>
+                  <Label htmlFor="tier">Rol</Label>
+                  {tierLocked ? (
+                    <>
+                      <Input
+                        id="tier"
+                        defaultValue={TIER_LABEL[currentTier]}
+                        disabled
+                      />
+                      <input type="hidden" name="tier" value={currentTier} />
+                    </>
+                  ) : (
+                    <Select id="tier" name="tier" defaultValue={currentTier}>
+                      {tierOptions.map((t) => (
+                        <option key={t} value={t}>
+                          {TIER_LABEL[t]}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="password">
-                    {isEdit ? "Yeni parola" : "Parola"}
-                  </Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="new-password"
-                    required={!isEdit}
-                    placeholder={isEdit ? "Boş = değişmez" : "En az 8 karakter"}
-                  />
-                </div>
+                {canSetPassword ? (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="password">
+                      {isEdit ? "Yeni parola" : "Parola"}
+                    </Label>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="new-password"
+                      required={!isEdit}
+                      placeholder={
+                        isEdit ? "Boş = değişmez" : "En az 8 karakter"
+                      }
+                    />
+                  </div>
+                ) : null}
               </div>
             </FormSection>
 

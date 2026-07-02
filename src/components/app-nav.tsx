@@ -14,11 +14,13 @@ import {
 import { createClient } from "@/lib/supabase/browser";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandLogo } from "@/components/brand";
+import { ChangePasswordDialog } from "@/components/change-password-dialog";
 import type { Role } from "@/lib/auth/roles";
 
 type Props = {
   role: Role;
   name: string;
+  email: string;
 };
 
 type NavItem = {
@@ -27,7 +29,7 @@ type NavItem = {
   icon: typeof LayoutDashboard;
 };
 
-export function AppNav({ role, name }: Props) {
+export function AppNav({ role, name, email }: Props) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -105,14 +107,17 @@ export function AppNav({ role, name }: Props) {
             {role}
           </span>
         </span>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          aria-label="Çıkış yap"
-          className="press ml-auto grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-destructive"
-        >
-          <LogOut className="size-4" />
-        </button>
+        <div className="ml-auto flex items-center gap-0.5">
+          <ChangePasswordDialog email={email} />
+          <button
+            type="button"
+            onClick={handleSignOut}
+            aria-label="Çıkış yap"
+            className="press grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-destructive"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </div>
       </div>
     </nav>
   );

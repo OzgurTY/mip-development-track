@@ -13,10 +13,11 @@ export default async function UsersPage() {
   } = await supabase.auth.getUser();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, is_superadmin")
     .eq("id", user!.id)
     .single();
   if (profile?.role !== "admin") redirect("/");
+  const isSuperadmin = profile?.is_superadmin === true;
 
   const users = await listUsers();
 
@@ -26,10 +27,14 @@ export default async function UsersPage() {
         title="Yönetim"
         subtitle={`${users.length} kullanıcı, rol ve erişim yönetimi.`}
       >
-        <UserDialog />
+        {isSuperadmin ? <UserDialog isSuperadmin /> : null}
       </PageHeader>
       <AdminSubnav />
-      <UserTable users={users} currentUserId={user!.id} />
+      <UserTable
+        users={users}
+        currentUserId={user!.id}
+        isSuperadmin={isSuperadmin}
+      />
     </div>
   );
 }
