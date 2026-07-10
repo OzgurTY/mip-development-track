@@ -97,6 +97,8 @@ export async function deleteTrackRecord(
   return {};
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 export async function addTrackUpdate(
   customerId: string,
   _prev: SaveState,
@@ -106,6 +108,7 @@ export async function addTrackUpdate(
   const weekDate = String(formData.get("week_date") ?? "").trim();
   if (!body) return { error: "Güncelleme metni gerekli" };
   if (!weekDate) return { error: "Tarih gerekli" };
+  if (!ISO_DATE.test(weekDate)) return { error: "Geçersiz tarih" };
 
   const supabase = await createClient();
   const {
@@ -133,6 +136,7 @@ export async function editTrackUpdate(
   const weekDate = String(formData.get("week_date") ?? "").trim();
   if (!body) return { error: "Güncelleme metni gerekli" };
   if (!weekDate) return { error: "Tarih gerekli" };
+  if (!ISO_DATE.test(weekDate)) return { error: "Geçersiz tarih" };
 
   const supabase = await createClient();
   // RLS engellerse hata yerine 0 satır döner; select ile yakalıyoruz.

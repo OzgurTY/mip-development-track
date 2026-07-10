@@ -9,8 +9,8 @@ import {
   type SaveState,
 } from "@/lib/track/actions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { DateInputTr } from "@/components/date-input-tr";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { TrackUpdate } from "@/lib/track/types";
 
@@ -62,8 +62,7 @@ export function UpdateItem({ update, weekLabel, canEdit }: Props) {
   if (editing) {
     return (
       <form action={action} className="space-y-2 rounded-xl bg-muted/40 p-3">
-        <Input
-          type="date"
+        <DateInputTr
           name="week_date"
           defaultValue={update.week_date}
           className="w-44"

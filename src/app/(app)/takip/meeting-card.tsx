@@ -8,8 +8,8 @@ import { addTrackUpdate, type SaveState } from "@/lib/track/actions";
 import { UpdateList } from "./update-list";
 import { ExportControl } from "./export-control";
 import { StatusBadge } from "@/components/status-badge";
+import { DateInputTr } from "@/components/date-input-tr";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { BoardRow, TrackUpdate } from "@/lib/track/types";
 
@@ -92,8 +92,7 @@ export function MeetingCard({ row, updates, defaultWeek, canEdit }: Props) {
             <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
               Yeni güncelleme
             </p>
-            <Input
-              type="date"
+            <DateInputTr
               name="week_date"
               defaultValue={defaultWeek}
               className="w-44"
