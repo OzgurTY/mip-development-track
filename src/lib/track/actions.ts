@@ -123,3 +123,43 @@ export async function addTrackUpdate(
   revalidatePath("/takip/toplanti");
   return { ok: true };
 }
+
+export async function editTrackUpdate(
+  updateId: string,
+  _prev: SaveState,
+  formData: FormData,
+): Promise<SaveState> {
+  const body = String(formData.get("body") ?? "").trim();
+  const weekDate = String(formData.get("week_date") ?? "").trim();
+  if (!body) return { error: "Güncelleme metni gerekli" };
+  if (!weekDate) return { error: "Tarih gerekli" };
+
+  const supabase = await createClient();
+  // RLS engellerse hata yerine 0 satır döner; select ile yakalıyoruz.
+  const { data, error } = await supabase
+    .from("track_updates")
+    .update({ week_date: weekDate, body })
+    .eq("id", updateId)
+    .select("id");
+  if (error || !data?.length) return { error: "Güncelleme kaydedilemedi" };
+
+  revalidatePath("/takip");
+  revalidatePath("/takip/toplanti");
+  return { ok: true };
+}
+
+export async function deleteTrackUpdate(
+  updateId: string,
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("track_updates")
+    .delete()
+    .eq("id", updateId)
+    .select("id");
+  if (error || !data?.length) return { error: "Silme başarısız" };
+
+  revalidatePath("/takip");
+  revalidatePath("/takip/toplanti");
+  return {};
+}

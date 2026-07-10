@@ -81,7 +81,7 @@ export function MeetingCard({ row, updates, defaultWeek, canEdit }: Props) {
           <p className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             Geçmiş
           </p>
-          <UpdateList updates={updates} />
+          <UpdateList updates={updates} canEdit={canEdit} />
         </div>
         {canEdit ? (
           <form

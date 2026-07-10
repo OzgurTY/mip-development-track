@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { UpdateItem } from "./update-item";
 import type { TrackUpdate } from "@/lib/track/types";
 
 const TR_MONTHS = [
@@ -31,9 +32,11 @@ const DEFAULT_COUNT = 5;
 export function UpdateList({
   updates,
   initialCount = DEFAULT_COUNT,
+  canEdit = false,
 }: {
   updates: TrackUpdate[];
   initialCount?: number;
+  canEdit?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -52,10 +55,11 @@ export function UpdateList({
         {visible.map((u) => (
           <li key={u.id} className="relative">
             <span className="absolute top-1 -left-[1.55rem] size-2.5 rounded-full bg-primary ring-4 ring-card" />
-            <p className="text-xs font-medium tabular-nums text-muted-foreground">
-              {formatWeek(u.week_date)}
-            </p>
-            <p className="mt-0.5 text-sm whitespace-pre-wrap">{u.body}</p>
+            <UpdateItem
+              update={u}
+              weekLabel={formatWeek(u.week_date)}
+              canEdit={canEdit}
+            />
           </li>
         ))}
       </ol>
