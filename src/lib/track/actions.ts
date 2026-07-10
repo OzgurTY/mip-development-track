@@ -97,6 +97,39 @@ export async function deleteTrackRecord(
   return {};
 }
 
+export async function setTrackStatus(
+  customerId: string,
+  status: string,
+): Promise<{ error?: string }> {
+  if (!TRACK_STATUSES.includes(status as (typeof TRACK_STATUSES)[number])) {
+    return { error: "Geçersiz durum" };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  // Upsert on conflict yalnızca verilen kolonları günceller; diğer takip
+  // alanlarına dokunmaz. RLS engellerse 0 satır döner; select ile yakalıyoruz.
+  const { data, error } = await supabase
+    .from("track_records")
+    .upsert(
+      {
+        customer_id: customerId,
+        status,
+        updated_at: new Date().toISOString(),
+        updated_by: user?.id ?? null,
+      },
+      { onConflict: "customer_id" },
+    )
+    .select("customer_id");
+  if (error || !data?.length) return { error: "Durum güncellenemedi" };
+
+  revalidatePath("/takip");
+  revalidatePath("/takip/toplanti");
+  return {};
+}
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function addTrackUpdate(

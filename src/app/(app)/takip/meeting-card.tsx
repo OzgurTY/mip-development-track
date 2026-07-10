@@ -7,6 +7,7 @@ import { ArrowUpRight } from "lucide-react";
 import { addTrackUpdate, type SaveState } from "@/lib/track/actions";
 import { UpdateList } from "./update-list";
 import { ExportControl } from "./export-control";
+import { StatusPicker } from "./status-picker";
 import { StatusBadge } from "@/components/status-badge";
 import { DateInputTr } from "@/components/date-input-tr";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,15 @@ export function MeetingCard({ row, updates, defaultWeek, canEdit }: Props) {
           <h2 className="font-display text-lg font-bold tracking-tight">
             {row.name}
           </h2>
-          <StatusBadge status={row.record?.status ?? null} />
+          {canEdit ? (
+            <StatusPicker
+              customerId={row.customerId}
+              name={row.name}
+              status={row.record?.status ?? null}
+            />
+          ) : (
+            <StatusBadge status={row.record?.status ?? null} />
+          )}
         </div>
         <div className="flex items-center gap-2.5">
           <ExportControl customerId={row.customerId} compact />
