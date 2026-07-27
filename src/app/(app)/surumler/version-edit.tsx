@@ -24,6 +24,8 @@ type Props = {
   record: VersionRecord | null;
   defs: FieldDefinition[];
   trigger: ReactElement;
+  /** Kayıttaki değerlerle formu doldurur ama yeni kayıt olarak ekler. */
+  duplicate?: boolean;
 };
 
 const CORE: { key: keyof VersionRecord; label: string; options: string[] }[] = [
@@ -41,9 +43,14 @@ export function VersionEdit({
   record,
   defs,
   trigger,
+  duplicate = false,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const save = saveVersionRecord.bind(null, record?.id ?? null, customerId);
+  const save = saveVersionRecord.bind(
+    null,
+    duplicate ? null : (record?.id ?? null),
+    customerId,
+  );
   const [state, action, pending] = useActionState<SaveState, FormData>(
     save,
     null,
@@ -63,7 +70,9 @@ export function VersionEdit({
       <DialogTrigger render={trigger} />
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{customerName} - sürüm kaydı</DialogTitle>
+          <DialogTitle>
+            {customerName} - {duplicate ? "sürüm kaydı kopyala" : "sürüm kaydı"}
+          </DialogTitle>
         </DialogHeader>
         {open ? (
         <form action={action} className="space-y-5">
@@ -126,7 +135,11 @@ export function VersionEdit({
             className="press h-10 w-full"
             disabled={pending}
           >
-            {pending ? "Kaydediliyor..." : "Kaydet"}
+            {pending
+              ? "Kaydediliyor..."
+              : duplicate
+                ? "Kopya olarak kaydet"
+                : "Kaydet"}
           </Button>
         </form>
         ) : null}

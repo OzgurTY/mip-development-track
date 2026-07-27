@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, Check } from "lucide-react";
+import { ArrowDown, Check, Copy } from "lucide-react";
 import { VersionEdit } from "./version-edit";
 import { Button } from "@/components/ui/button";
 import {
@@ -98,17 +98,36 @@ export function VersionTable({ rows, catalog, defs, canEdit }: Props) {
                 ))}
                 {canEdit ? (
                   <TableCell className="px-3 py-2.5 text-right">
-                    <VersionEdit
-                      customerId={row.customer_id}
-                      customerName={row.customerName}
-                      record={row}
-                      defs={defs}
-                      trigger={
-                        <Button variant="ghost" size="sm" className="press">
-                          Düzenle
-                        </Button>
-                      }
-                    />
+                    <div className="inline-flex items-center gap-0.5">
+                      <VersionEdit
+                        customerId={row.customer_id}
+                        customerName={row.customerName}
+                        record={row}
+                        defs={defs}
+                        duplicate
+                        trigger={
+                          <button
+                            type="button"
+                            aria-label={`${row.customerName} sürüm kaydını kopyala`}
+                            title="Kaydı kopyala"
+                            className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                          >
+                            <Copy className="size-4" />
+                          </button>
+                        }
+                      />
+                      <VersionEdit
+                        customerId={row.customer_id}
+                        customerName={row.customerName}
+                        record={row}
+                        defs={defs}
+                        trigger={
+                          <Button variant="ghost" size="sm" className="press">
+                            Düzenle
+                          </Button>
+                        }
+                      />
+                    </div>
                   </TableCell>
                 ) : null}
               </TableRow>

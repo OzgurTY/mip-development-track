@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Pencil, ArrowDown } from "lucide-react";
+import { Pencil, Copy, ArrowDown } from "lucide-react";
 import { VersionEdit } from "./version-edit";
 import { VersionDeleteButton } from "./version-delete";
 import { compareVersion } from "@/lib/versions/drift";
@@ -94,6 +94,23 @@ export function InstallationCard({
 
       {canEdit ? (
         <div className="row-rail absolute top-3 right-3 flex items-center gap-1">
+          <VersionEdit
+            customerId={row.customer_id}
+            customerName={row.customerName}
+            record={row}
+            defs={defs}
+            duplicate
+            trigger={
+              <button
+                type="button"
+                aria-label={`${row.customerName} sürüm kaydını kopyala`}
+                title="Kaydı kopyala"
+                className="press grid size-8 place-items-center rounded-lg bg-card/80 text-muted-foreground ring-1 ring-foreground/[0.06] backdrop-blur transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              >
+                <Copy className="size-4" />
+              </button>
+            }
+          />
           <VersionEdit
             customerId={row.customer_id}
             customerName={row.customerName}
