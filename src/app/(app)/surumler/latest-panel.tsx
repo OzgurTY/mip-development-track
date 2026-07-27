@@ -81,13 +81,16 @@ export function LatestPanel({
 }: {
   components: CatalogComponent[];
 }) {
+  const sorted = [...components].sort((a, b) =>
+    a.label.localeCompare(b.label, "tr"),
+  );
   return (
     <BentoCard
       title="Güncel sürüm referansı"
       icon={Gauge}
       bodyClassName="flex flex-wrap gap-2"
     >
-      {components.map((c) => (
+      {sorted.map((c) => (
         <RefChip key={c.key} component={c} />
       ))}
     </BentoCard>
