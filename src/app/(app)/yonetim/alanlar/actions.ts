@@ -86,6 +86,59 @@ export async function createFieldDefinition(
   return { ok: true };
 }
 
+const fieldUpdateSchema = z.object({
+  label: z.string().trim().min(1, "Etiket zorunlu").max(120),
+  options: z.array(z.string()),
+  required: z.boolean(),
+});
+
+/**
+ * Etiket, seçenekler ve zorunluluk düzenlenebilir; key ve tür sabittir çünkü
+ * mevcut kayıtlardaki değerler bu ikisine bağlı (tür değişimi doğrulamayı bozar).
+ */
+export async function updateFieldDefinition(
+  id: string,
+  _prev: FieldDefState,
+  formData: FormData,
+): Promise<FieldDefState> {
+  const parsed = fieldUpdateSchema.safeParse({
+    label: formData.get("label"),
+    options: normalizeOptions(String(formData.get("options") ?? "").split("\n")),
+    required:
+      formData.get("required") === "on" || formData.get("required") === "true",
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Geçersiz giriş" };
+  }
+
+  const supabase = await createClient();
+  const { data: existing } = await supabase
+    .from("field_definitions")
+    .select("type")
+    .eq("id", id)
+    .single();
+  if (!existing) return { error: "Alan bulunamadı" };
+  if (
+    (existing.type === "select" || existing.type === "multiselect") &&
+    parsed.data.options.length === 0
+  ) {
+    return { error: "Seçmeli alan için en az bir seçenek gerekli" };
+  }
+
+  const { error } = await supabase
+    .from("field_definitions")
+    .update({
+      label: parsed.data.label,
+      options: parsed.data.options,
+      required: parsed.data.required,
+    })
+    .eq("id", id);
+  if (error) return { error: "Güncelleme başarısız" };
+
+  revalidateModules();
+  return { ok: true };
+}
+
 export async function deleteFieldDefinition(
   id: string,
 ): Promise<{ error?: string }> {

@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { deleteFieldDefinition } from "./actions";
+import { FieldEdit } from "./field-edit";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import {
   Table,
@@ -82,15 +83,18 @@ export function FieldList({ defs }: { defs: FieldDefinition[] }) {
                   {d.required ? "Evet" : "Hayır"}
                 </TableCell>
                 <TableCell className="text-right">
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => remove(d.id, d.label)}
-                    aria-label="Alanı sil"
-                    className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
+                  <div className="inline-flex items-center gap-1">
+                    <FieldEdit def={d} />
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => remove(d.id, d.label)}
+                      aria-label="Alanı sil"
+                      className="press grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))
