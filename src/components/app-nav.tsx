@@ -7,6 +7,7 @@ import {
   Building2,
   ListChecks,
   Layers,
+  FlaskConical,
   ServerCog,
   Settings2,
   LogOut,
@@ -38,6 +39,7 @@ export function AppNav({ role, name, email }: Props) {
     { href: "/musteriler", label: "Müşteriler", icon: Building2 },
     { href: "/takip", label: "Takip", icon: ListChecks },
     { href: "/surumler", label: "Sürümler", icon: Layers },
+    { href: "/poc", label: "PoC", icon: FlaskConical },
     ...(role === "admin" || role === "editor"
       ? [{ href: "/altyapi", label: "Altyapı", icon: ServerCog }]
       : []),
@@ -54,7 +56,7 @@ export function AppNav({ role, name, email }: Props) {
   const initials = name.trim().slice(0, 2).toUpperCase() || "MD";
 
   return (
-    <nav className="sticky top-0 flex h-dvh flex-col gap-1 border-r border-sidebar-border bg-sidebar p-3">
+    <nav className="sticky top-0 flex h-dvh flex-col gap-1 border-r border-sidebar-border bg-sidebar p-3 print:hidden">
       <div className="mb-4 flex items-center justify-between gap-2 px-1 pt-1.5">
         <Link href="/" className="press flex items-center" aria-label="Genel Bakış">
           <BrandLogo className="h-6 w-auto" />

@@ -267,3 +267,34 @@
     }
   }
 }
+
+/*
+ * PoC belgesi yazdirma: kagit A4, uygulama kabugu gizli. Onizlemede gorunen
+ * .poc-paper yuzeyi ciktiya birebir gecer, golge ve kenar bosluklari dusurulur.
+ */
+@page {
+  size: A4;
+  margin: 16mm 15mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff;
+  }
+  .poc-paper {
+    max-width: none;
+    padding: 0;
+    box-shadow: none;
+    font-size: 10.5pt;
+  }
+  .poc-paper table {
+    page-break-inside: auto;
+  }
+  .poc-paper tr {
+    page-break-inside: avoid;
+  }
+  .poc-paper section {
+    break-inside: avoid;
+  }
+}

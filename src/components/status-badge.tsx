@@ -3,6 +3,19 @@ const STATUS_COLOR: Record<string, string> = {
   Stabil: "var(--accent-sky)",
   Beklemede: "var(--accent-amber)",
   İnaktif: "var(--accent-rose)",
+
+  // PoC durumlari, sonuclari ve satir bazli degerlendirmeler.
+  Planlandı: "var(--accent-sky)",
+  "Devam ediyor": "var(--accent-amber)",
+  Tamamlandı: "var(--accent-emerald)",
+  İptal: "var(--accent-rose)",
+  Başarılı: "var(--accent-emerald)",
+  "Kısmen Başarılı": "var(--accent-amber)",
+  Başarısız: "var(--accent-rose)",
+  Kısmen: "var(--accent-amber)",
+  Karşılandı: "var(--accent-emerald)",
+  Karşılanmadı: "var(--accent-rose)",
+  Bekliyor: "var(--muted-foreground)",
 };
 
 function tint(color: string): React.CSSProperties {
