@@ -59,7 +59,10 @@ export function PocPreview({ draft }: Props) {
             ["Sunucu", draft.server_info],
             ["İşletim Sistemi ve Kaynak", draft.os_info],
             ["MIP Sürümü", draft.mip_version],
-            ["Kurulum Tarihi", draft.install_date ? formatDay(draft.install_date) : ""],
+            [
+              "Kurulum Tarihi",
+              draft.install_date ? formatDay(draft.install_date) : "",
+            ],
             ["Sistem Erişimleri", draft.access_note],
             ["Kurulum Sonucu", draft.install_result],
           ]}
@@ -221,46 +224,49 @@ function Grid({
   emptyLabel?: string;
   className?: string;
 }) {
+  // Genis tablolar telefonda kagidi tasirmasin diye kendi icinde kayar.
   return (
-    <table className={`w-full border-collapse text-[11.5px] ${className ?? ""}`}>
-      <thead>
-        <tr>
-          {head.map((h, i) => (
-            <th
-              key={h}
-              style={{ width: widths[i] }}
-              className="border border-[#c8c8c8] bg-[#e8eaed] px-2 py-1.5 text-left font-semibold"
-            >
-              {h}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.length === 0 ? (
+    <div className={`overflow-x-auto ${className ?? ""}`}>
+      <table className="w-full min-w-[32rem] border-collapse text-[11.5px] sm:min-w-0 print:min-w-0">
+        <thead>
           <tr>
-            <td
-              colSpan={head.length}
-              className="border border-[#c8c8c8] px-2 py-2 text-center text-[#aaa]"
-            >
-              {emptyLabel ?? "-"}
-            </td>
+            {head.map((h, i) => (
+              <th
+                key={h}
+                style={{ width: widths[i] }}
+                className="border border-[#c8c8c8] bg-[#e8eaed] px-2 py-1.5 text-left font-semibold"
+              >
+                {h}
+              </th>
+            ))}
           </tr>
-        ) : (
-          rows.map((row, i) => (
-            <tr key={i}>
-              {row.map((value, j) => (
-                <td
-                  key={j}
-                  className="border border-[#c8c8c8] px-2 py-1.5 align-top"
-                >
-                  <Val value={value} />
-                </td>
-              ))}
+        </thead>
+        <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td
+                colSpan={head.length}
+                className="border border-[#c8c8c8] px-2 py-2 text-center text-[#aaa]"
+              >
+                {emptyLabel ?? "-"}
+              </td>
             </tr>
-          ))
-        )}
-      </tbody>
-    </table>
+          ) : (
+            rows.map((row, i) => (
+              <tr key={i}>
+                {row.map((value, j) => (
+                  <td
+                    key={j}
+                    className="border border-[#c8c8c8] px-2 py-1.5 align-top"
+                  >
+                    <Val value={value} />
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }

@@ -234,7 +234,7 @@ export function EntryCard({
       </header>
 
       {entry.fields.length > 0 && (
-        <dl className="mt-4 grid grid-cols-[9rem_1fr] gap-x-4 gap-y-1.5 text-sm">
+        <dl className="mt-4 grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-[9rem_1fr]">
           {entry.fields.map((f) => (
             <div key={f.key} className="contents">
               <dt className="text-muted-foreground">{f.label}</dt>

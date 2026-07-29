@@ -49,7 +49,7 @@ export function StatTile({ label, value, icon: Icon, accent, hint, href }: Props
       </div>
       <div className="relative mt-4">
         <p
-          className="font-display text-4xl font-bold tabular-nums"
+          className="font-display text-3xl font-bold tabular-nums sm:text-4xl"
           style={{ color }}
         >
           {value}

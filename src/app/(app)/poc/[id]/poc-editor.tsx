@@ -92,7 +92,7 @@ export function PocEditor({ record, canEdit, customerOptions }: Props) {
             <ChevronLeft className="size-4" />
             PoC listesi
           </Link>
-          <h1 className="mt-1 truncate font-display text-3xl font-bold tracking-tight">
+          <h1 className="mt-1 truncate font-display text-2xl font-bold tracking-tight sm:text-3xl">
             {draft.customer_name || "Firma adı girilmedi"}
           </h1>
           <p className="mt-0.5 truncate text-sm text-muted-foreground">
@@ -148,7 +148,7 @@ export function PocEditor({ record, canEdit, customerOptions }: Props) {
                 Çıktının birebir görünümü
               </p>
             </div>
-            <div className="max-h-[calc(100dvh-9rem)] overflow-auto rounded-2xl bg-muted/40 p-4 ring-1 ring-foreground/[0.06]">
+            <div className="overflow-x-auto rounded-2xl bg-muted/40 p-3 ring-1 ring-foreground/[0.06] sm:p-4 xl:max-h-[calc(100dvh-9rem)] xl:overflow-auto">
               <PocPreview draft={draft} />
             </div>
           </div>

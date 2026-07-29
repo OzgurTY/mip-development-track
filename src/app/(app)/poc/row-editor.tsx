@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -37,7 +38,10 @@ export function RowEditor<T extends Record<string, string>>({
   disabled,
   emptyHint,
 }: Props<T>) {
-  const template = `${columns.map((c) => c.width).join(" ")} 2rem`;
+  // Telefonda satirlar alt alta yigilir; kolon duzeni sm ve uzerinde devreye girer.
+  const template = {
+    "--row-cols": `${columns.map((c) => c.width).join(" ")} 2rem`,
+  } as CSSProperties;
 
   function update(index: number, key: keyof T & string, value: string) {
     onChange(rows.map((row, i) => (i === index ? { ...row, [key]: value } : row)));
@@ -51,8 +55,8 @@ export function RowEditor<T extends Record<string, string>>({
     <div className="space-y-2">
       {rows.length > 0 ? (
         <div
-          className="hidden gap-2 px-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase sm:grid"
-          style={{ gridTemplateColumns: template }}
+          className="hidden gap-2 px-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase sm:grid sm:[grid-template-columns:var(--row-cols)]"
+          style={template}
         >
           {columns.map((c) => (
             <span key={c.key}>{c.label}</span>
@@ -68,8 +72,8 @@ export function RowEditor<T extends Record<string, string>>({
       {rows.map((row, index) => (
         <div
           key={index}
-          className="grid gap-2 sm:items-center"
-          style={{ gridTemplateColumns: template }}
+          className="grid gap-2 rounded-xl bg-card p-2.5 ring-1 ring-foreground/[0.06] sm:items-center sm:rounded-none sm:bg-transparent sm:p-0 sm:ring-0 sm:[grid-template-columns:var(--row-cols)]"
+          style={template}
         >
           {columns.map((column) => (
             <div key={column.key} className="min-w-0">
@@ -110,7 +114,7 @@ export function RowEditor<T extends Record<string, string>>({
             onClick={() => remove(index)}
             disabled={disabled}
             aria-label={`${index + 1}. satırı sil`}
-            className="press grid size-8 place-items-center self-center rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
+            className="press grid size-8 place-items-center justify-self-end rounded-lg text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-40 sm:self-center sm:justify-self-auto"
           >
             <Trash2 className="size-4" />
           </button>

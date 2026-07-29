@@ -10,7 +10,7 @@ export function PageHeader({ title, subtitle, children }: Props) {
   return (
     <header className="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           {title}
         </h1>
         {subtitle ? (
