@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { RowEditor } from "./row-editor";
+import { RowEditor } from "@/components/row-editor";
 import { ProcessEditor } from "./process-editor";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

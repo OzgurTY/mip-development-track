@@ -4,8 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { normalizePageAccess, type PageKey } from "@/lib/auth/pages";
+import type { Role } from "@/lib/auth/roles";
 import {
   checkDeleteUser,
+  checkPageAccessChange,
   checkTierChange,
   tierToStored,
   userTier,
@@ -38,9 +41,29 @@ async function requireAdmin(): Promise<Caller | { error: string }> {
   return { id: user.id, isSuperadmin };
 }
 
+/**
+ * Formdan gelen sayfa erisimi: "all" = kisitlama yok (null), JSON dizi =
+ * secili anahtarlar. Alan hic gonderilmediyse undefined doner ve dokunulmaz.
+ */
+function readPageAccess(
+  raw: FormDataEntryValue | null,
+  role: Role,
+): PageKey[] | null | undefined {
+  if (raw === null) return undefined;
+  const value = String(raw);
+  if (value === "all") return null;
+  try {
+    return normalizePageAccess(JSON.parse(value), role);
+  } catch {
+    return undefined;
+  }
+}
+
 async function loadUsers(): Promise<UserLite[]> {
   const admin = createAdminClient();
-  const { data } = await admin.from("profiles").select("id, role, is_superadmin");
+  const { data } = await admin
+    .from("profiles")
+    .select("id, role, is_superadmin");
   return (data ?? []) as UserLite[];
 }
 
@@ -89,9 +112,19 @@ export async function createUser(
     };
   }
 
+  // Super yonetici kisitlanmaz; digerlerinde form degeri uygulanir.
+  const pageAccess = is_superadmin
+    ? null
+    : (readPageAccess(formData.get("page_access"), role) ?? null);
+
   const { error: profileError } = await admin
     .from("profiles")
-    .update({ role, is_superadmin, full_name: parsed.data.full_name })
+    .update({
+      role,
+      is_superadmin,
+      full_name: parsed.data.full_name,
+      page_access: pageAccess,
+    })
     .eq("id", data.user.id);
   if (profileError) return { error: "Rol atanamadı." };
 
@@ -149,11 +182,23 @@ export async function updateUser(
   );
   if (!guard.ok) return { error: guard.error };
 
+  // Sayfa erisimi yeni role gore temizlenir (rol dusunce fazla sayfa dusmesin).
+  const submittedAccess = readPageAccess(formData.get("page_access"), role);
+  const patch: Record<string, unknown> = {
+    role,
+    is_superadmin,
+    full_name: parsed.data.full_name,
+  };
+  if (is_superadmin) {
+    patch.page_access = null;
+  } else if (submittedAccess !== undefined) {
+    const accessGuard = checkPageAccessChange(auth.id, userId, target);
+    if (!accessGuard.ok) return { error: accessGuard.error };
+    patch.page_access = submittedAccess;
+  }
+
   const admin = createAdminClient();
-  const { error } = await admin
-    .from("profiles")
-    .update({ role, is_superadmin, full_name: parsed.data.full_name })
-    .eq("id", userId);
+  const { error } = await admin.from("profiles").update(patch).eq("id", userId);
   if (error) return { error: "Güncellenemedi." };
 
   // Resetting another user's password is a superadmin-only action.

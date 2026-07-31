@@ -1,23 +1,13 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { listUsers } from "@/lib/users/queries";
 import { PageHeader } from "@/components/page-header";
 import { AdminSubnav } from "../admin-subnav";
 import { UserTable } from "./user-table";
 import { UserDialog } from "./user-dialog";
+import { requirePage } from "@/lib/auth/access";
 
 export default async function UsersPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, is_superadmin")
-    .eq("id", user!.id)
-    .single();
-  if (profile?.role !== "admin") redirect("/");
-  const isSuperadmin = profile?.is_superadmin === true;
+  const access = await requirePage("yonetim");
+  const isSuperadmin = access.isSuperadmin;
 
   const users = await listUsers();
 
@@ -32,7 +22,7 @@ export default async function UsersPage() {
       <AdminSubnav />
       <UserTable
         users={users}
-        currentUserId={user!.id}
+        currentUserId={access.userId}
         isSuperadmin={isSuperadmin}
       />
     </div>

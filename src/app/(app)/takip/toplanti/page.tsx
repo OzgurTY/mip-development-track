@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
 import { getTrackBoard, getCustomerUpdates } from "@/lib/track/queries";
 import { MeetingCard } from "../meeting-card";
 import { ExportControl } from "../export-control";
 import { PageHeader } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import type { TrackUpdate } from "@/lib/track/types";
+import { requirePage } from "@/lib/auth/access";
 
 // Today as YYYY-MM-DD (local). New updates default to the day they are entered.
 function todayIso(): string {
@@ -16,15 +16,9 @@ function todayIso(): string {
 }
 
 export default async function MeetingPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const [rows, profileResult] = await Promise.all([
-    getTrackBoard(),
-    supabase.from("profiles").select("role").eq("id", user!.id).single(),
-  ]);
-  const canEdit = ["editor", "admin"].includes(profileResult.data?.role ?? "");
+  const access = await requirePage("takip");
+  const rows = await getTrackBoard();
+  const canEdit = access.canEdit;
 
   const updatesByCustomer = new Map<string, TrackUpdate[]>();
   await Promise.all(

@@ -3,12 +3,14 @@ import { getPocRecord } from "@/lib/poc/queries";
 import { toDraft } from "@/lib/poc/draft";
 import { PocPreview } from "../../poc-preview";
 import { PrintActions } from "./print-actions";
+import { requirePage } from "@/lib/auth/access";
 
 export default async function PocPrintPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePage("poc");
   const { id } = await params;
   const detail = await getPocRecord(id);
   if (!detail) notFound();

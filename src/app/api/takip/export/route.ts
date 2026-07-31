@@ -1,5 +1,7 @@
 import ExcelJS from "exceljs";
 import { createClient } from "@/lib/supabase/server";
+import { getAccess } from "@/lib/auth/access";
+import { canSeePage } from "@/lib/auth/pages";
 import { getTrackBoard, getUpdatesForExport } from "@/lib/track/queries";
 import {
   UPDATE_HEADERS,
@@ -24,6 +26,9 @@ export async function GET(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return new Response("Yetkisiz", { status: 401 });
+  if (!canSeePage(await getAccess(), "takip")) {
+    return new Response("Bu sayfaya erişiminiz yok", { status: 403 });
+  }
 
   const url = new URL(request.url);
   const scope =

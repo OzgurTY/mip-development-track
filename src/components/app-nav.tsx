@@ -9,6 +9,7 @@ import {
   ListChecks,
   Layers,
   FlaskConical,
+  CalendarDays,
   ServerCog,
   Settings2,
   LogOut,
@@ -19,41 +20,35 @@ import { createClient } from "@/lib/supabase/browser";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandLogo } from "@/components/brand";
 import { ChangePasswordDialog } from "@/components/change-password-dialog";
+import type { PageKey } from "@/lib/auth/pages";
 import type { Role } from "@/lib/auth/roles";
 
+/** Gorunur sayfalar sunucuda hesaplanir; burada yalnizca ikonlari eslesir. */
+export type NavPage = { key: PageKey; href: string; label: string };
+
+const ICONS: Record<PageKey, typeof LayoutDashboard> = {
+  genel: LayoutDashboard,
+  musteriler: Building2,
+  takip: ListChecks,
+  surumler: Layers,
+  poc: FlaskConical,
+  takvim: CalendarDays,
+  altyapi: ServerCog,
+  yonetim: Settings2,
+};
+
 type Props = {
+  pages: NavPage[];
   role: Role;
   name: string;
   email: string;
 };
 
-type NavItem = {
-  href: string;
-  label: string;
-  icon: typeof LayoutDashboard;
-};
-
-function navItems(role: Role): NavItem[] {
-  return [
-    { href: "/", label: "Genel Bakış", icon: LayoutDashboard },
-    { href: "/musteriler", label: "Müşteriler", icon: Building2 },
-    { href: "/takip", label: "Takip", icon: ListChecks },
-    { href: "/surumler", label: "Sürümler", icon: Layers },
-    { href: "/poc", label: "PoC", icon: FlaskConical },
-    ...(role === "admin" || role === "editor"
-      ? [{ href: "/altyapi", label: "Altyapı", icon: ServerCog }]
-      : []),
-    ...(role === "admin"
-      ? [{ href: "/yonetim", label: "Yönetim", icon: Settings2 }]
-      : []),
-  ];
-}
-
 /**
  * Genis ekranda sabit kenar cubugu, telefonda ust bar + kayan cekmece.
  * Cekmece rota degisince ve Escape ile kapanir.
  */
-export function AppNav({ role, name, email }: Props) {
+export function AppNav({ pages, role, name, email }: Props) {
   const pathname = usePathname();
   // Cekmecenin acildigi rota da tutulur; rota degisince kendiliginden kapanir.
   const [menu, setMenu] = useState({ open: false, path: pathname });
@@ -102,6 +97,7 @@ export function AppNav({ role, name, email }: Props) {
           />
           <div className="absolute inset-y-0 left-0 flex w-[17rem] max-w-[85vw] flex-col bg-sidebar p-3 shadow-2xl animate-in slide-in-from-left duration-200">
             <NavPanel
+              pages={pages}
               role={role}
               name={name}
               email={email}
@@ -113,13 +109,20 @@ export function AppNav({ role, name, email }: Props) {
       ) : null}
 
       <nav className="sticky top-0 hidden h-dvh flex-col gap-1 border-r border-sidebar-border bg-sidebar p-3 lg:flex print:hidden">
-        <NavPanel role={role} name={name} email={email} pathname={pathname} />
+        <NavPanel
+          pages={pages}
+          role={role}
+          name={name}
+          email={email}
+          pathname={pathname}
+        />
       </nav>
     </>
   );
 }
 
 function NavPanel({
+  pages,
   role,
   name,
   email,
@@ -127,7 +130,6 @@ function NavPanel({
   onClose,
 }: Props & { pathname: string; onClose?: () => void }) {
   const router = useRouter();
-  const items = navItems(role);
   const initials = name.trim().slice(0, 2).toUpperCase() || "MD";
 
   async function handleSignOut() {
@@ -156,13 +158,13 @@ function NavPanel({
       </div>
 
       <div className="flex flex-1 flex-col gap-1 overflow-y-auto">
-        {items.map((item) => {
+        {pages.map((item) => {
           const isActive =
             item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-          const Icon = item.icon;
+          const Icon = ICONS[item.key];
           return (
             <Link
-              key={item.href}
+              key={item.key}
               href={item.href}
               aria-current={isActive ? "page" : undefined}
               className={

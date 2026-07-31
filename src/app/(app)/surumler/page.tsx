@@ -8,24 +8,20 @@ import { VersionBoard } from "./version-board";
 import { VersionEdit } from "./version-edit";
 import { LatestPanel } from "./latest-panel";
 import { Button } from "@/components/ui/button";
+import { requirePage } from "@/lib/auth/access";
 
 export default async function VersionsPage() {
+  const access = await requirePage("surumler");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  const [rows, components, defs, customersResult, profileResult] =
-    await Promise.all([
-      getVersionMatrix(),
-      getComponentLatest(),
-      getFieldDefinitions("version"),
-      supabase.from("customers").select("id, name").order("name"),
-      supabase.from("profiles").select("role").eq("id", user!.id).single(),
-    ]);
-  const role = profileResult.data?.role ?? "viewer";
-  const canEdit = ["editor", "admin"].includes(role);
-  const isAdmin = role === "admin";
+  const [rows, components, defs, customersResult] = await Promise.all([
+    getVersionMatrix(),
+    getComponentLatest(),
+    getFieldDefinitions("version"),
+    supabase.from("customers").select("id, name").order("name"),
+  ]);
+  const canEdit = access.canEdit;
+  const isAdmin = access.isAdmin;
   const customers = customersResult.data ?? [];
   const firstCustomer = customers[0];
   const catalog = buildVersionCatalog(defs, components);

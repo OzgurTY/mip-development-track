@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
@@ -8,23 +7,16 @@ import { getInfraTypes } from "@/lib/infra/type-queries";
 import { PageHeader } from "@/components/page-header";
 import { EntryForm } from "./entry-form";
 import { EntryCard } from "./entry-card";
+import { requirePage } from "@/lib/auth/access";
 
 export default async function InfraPage({
   searchParams,
 }: {
   searchParams: Promise<{ m?: string }>;
 }) {
+  const access = await requirePage("altyapi");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user!.id)
-    .single();
-  const role = profile?.role ?? "viewer";
-  if (!["editor", "admin"].includes(role)) redirect("/");
+  const role = access.role;
 
   const { m } = await searchParams;
   const [customersResult, defs, types] = await Promise.all([

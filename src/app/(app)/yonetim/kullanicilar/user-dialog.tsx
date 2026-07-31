@@ -4,7 +4,8 @@ import { useActionState, useEffect, useState } from "react";
 import type { ReactElement } from "react";
 import { UserPlus } from "lucide-react";
 import { createUser, updateUser, type SaveState } from "@/lib/users/actions";
-import { userTier, type Tier } from "@/lib/users/guards";
+import { tierToStored, userTier, type Tier } from "@/lib/users/guards";
+import { PageAccessField } from "./page-access-field";
 import { FormSection } from "@/components/form-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import type { PageKey } from "@/lib/auth/pages";
 import type { ManagedUser } from "@/lib/users/guards";
 
 const TIER_LABEL: Record<Tier, string> = {
@@ -30,10 +32,17 @@ type Props = {
   user?: ManagedUser;
   // Whether the current (acting) user is a superadmin.
   isSuperadmin: boolean;
+  /** Kendi kaydini duzenliyorsa sayfa erisimi kilitlenir. */
+  currentUserId?: string;
   trigger?: ReactElement;
 };
 
-export function UserDialog({ user, isSuperadmin, trigger }: Props) {
+export function UserDialog({
+  user,
+  isSuperadmin,
+  currentUserId,
+  trigger,
+}: Props) {
   const isEdit = Boolean(user);
   const [open, setOpen] = useState(false);
   const action = isEdit ? updateUser.bind(null, user!.id) : createUser;
@@ -55,6 +64,7 @@ export function UserDialog({ user, isSuperadmin, trigger }: Props) {
       : ["viewer", "editor", "admin"];
   // Only a superadmin can set or reset passwords.
   const canSetPassword = isSuperadmin;
+  const isSelf = Boolean(user && currentUserId && user.id === currentUserId);
 
   const defaultTrigger = (
     <Button size="lg" className="press h-10 gap-2">
@@ -66,7 +76,7 @@ export function UserDialog({ user, isSuperadmin, trigger }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger ?? defaultTrigger} />
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
             {isEdit
@@ -102,51 +112,17 @@ export function UserDialog({ user, isSuperadmin, trigger }: Props) {
                   />
                 )}
               </div>
-              <div
-                className={
-                  canSetPassword ? "grid gap-3 sm:grid-cols-2" : "space-y-1.5"
-                }
-              >
-                <div className="space-y-1.5">
-                  <Label htmlFor="tier">Rol</Label>
-                  {tierLocked ? (
-                    <>
-                      <Input
-                        id="tier"
-                        defaultValue={TIER_LABEL[currentTier]}
-                        disabled
-                      />
-                      <input type="hidden" name="tier" value={currentTier} />
-                    </>
-                  ) : (
-                    <Select id="tier" name="tier" defaultValue={currentTier}>
-                      {tierOptions.map((t) => (
-                        <option key={t} value={t}>
-                          {TIER_LABEL[t]}
-                        </option>
-                      ))}
-                    </Select>
-                  )}
-                </div>
-                {canSetPassword ? (
-                  <div className="space-y-1.5">
-                    <Label htmlFor="password">
-                      {isEdit ? "Yeni parola" : "Parola"}
-                    </Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      autoComplete="new-password"
-                      required={!isEdit}
-                      placeholder={
-                        isEdit ? "Boş = değişmez" : "En az 8 karakter"
-                      }
-                    />
-                  </div>
-                ) : null}
-              </div>
             </FormSection>
+
+            <RoleAndAccess
+              isEdit={isEdit}
+              currentTier={currentTier}
+              tierLocked={tierLocked}
+              tierOptions={tierOptions}
+              canSetPassword={canSetPassword}
+              initialAccess={user?.page_access ?? null}
+              isSelf={isSelf}
+            />
 
             {state && "error" in state ? (
               <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -170,5 +146,101 @@ export function UserDialog({ user, isSuperadmin, trigger }: Props) {
         ) : null}
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * Rol, parola ve sayfa erisimi. Form icinde durdugu icin diyalog kapaninca
+ * state kendiliginden sifirlanir; sayfa listesi secili role gore daralir.
+ */
+function RoleAndAccess({
+  isEdit,
+  currentTier,
+  tierLocked,
+  tierOptions,
+  canSetPassword,
+  initialAccess,
+  isSelf,
+}: {
+  isEdit: boolean;
+  currentTier: Tier;
+  tierLocked: boolean;
+  tierOptions: Tier[];
+  canSetPassword: boolean;
+  initialAccess: PageKey[] | null;
+  isSelf: boolean;
+}) {
+  const [tier, setTier] = useState<Tier>(currentTier);
+  const { role } = tierToStored(tier);
+
+  const lockedReason = isSelf
+    ? "Kendi sayfa erişiminizi değiştiremezsiniz."
+    : tier === "superadmin"
+      ? "Süper yönetici her sayfayı görür, kısıtlanamaz."
+      : undefined;
+
+  return (
+    <>
+      <FormSection>
+        <div
+          className={
+            canSetPassword ? "grid gap-3 sm:grid-cols-2" : "space-y-1.5"
+          }
+        >
+          <div className="space-y-1.5">
+            <Label htmlFor="tier">Rol</Label>
+            {tierLocked ? (
+              <>
+                <Input
+                  id="tier"
+                  defaultValue={TIER_LABEL[currentTier]}
+                  disabled
+                />
+                <input type="hidden" name="tier" value={currentTier} />
+              </>
+            ) : (
+              <Select
+                id="tier"
+                name="tier"
+                value={tier}
+                onChange={(e) => setTier(e.target.value as Tier)}
+              >
+                {tierOptions.map((t) => (
+                  <option key={t} value={t}>
+                    {TIER_LABEL[t]}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </div>
+          {canSetPassword ? (
+            <div className="space-y-1.5">
+              <Label htmlFor="password">
+                {isEdit ? "Yeni parola" : "Parola"}
+              </Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required={!isEdit}
+                placeholder={isEdit ? "Boş = değişmez" : "En az 8 karakter"}
+              />
+            </div>
+          ) : null}
+        </div>
+      </FormSection>
+
+      <FormSection
+        title="Sayfa erişimi"
+        description="Kullanıcının menüde görebileceği ve açabileceği sayfalar."
+      >
+        <PageAccessField
+          role={role}
+          initial={initialAccess}
+          lockedReason={lockedReason}
+        />
+      </FormSection>
+    </>
   );
 }

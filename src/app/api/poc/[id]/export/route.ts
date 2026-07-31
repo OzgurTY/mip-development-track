@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAccess } from "@/lib/auth/access";
+import { canSeePage } from "@/lib/auth/pages";
 import { getPocRecord } from "@/lib/poc/queries";
 import { buildPocDocx } from "@/lib/poc/docx";
 import { exportFileName } from "@/lib/poc/format";
@@ -17,6 +19,11 @@ export async function GET(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return new Response("Yetkisiz", { status: 401 });
+
+  // Sayfa erisimi kapali olan kullanici belgeyi API'den de indiremez.
+  if (!canSeePage(await getAccess(), "poc")) {
+    return new Response("Bu sayfaya erişiminiz yok", { status: 403 });
+  }
 
   const { id } = await params;
   const detail = await getPocRecord(id);

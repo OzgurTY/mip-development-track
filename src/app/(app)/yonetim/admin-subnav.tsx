@@ -2,18 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SlidersHorizontal, Users } from "lucide-react";
+import { CalendarCog, Radar, SlidersHorizontal, Users } from "lucide-react";
 
 const ITEMS = [
   { href: "/yonetim/alanlar", label: "Alanlar", icon: SlidersHorizontal },
   { href: "/yonetim/kullanicilar", label: "Kullanıcılar", icon: Users },
+  {
+    href: "/yonetim/etkinlik-tipleri",
+    label: "Etkinlik tipleri",
+    icon: CalendarCog,
+  },
+  {
+    href: "/yonetim/etkinlik-kaynaklari",
+    label: "Etkinlik kaynakları",
+    icon: Radar,
+  },
 ];
 
 export function AdminSubnav() {
   const pathname = usePathname();
 
   return (
-    <div className="inline-flex items-center gap-1 rounded-xl bg-muted/60 p-1 ring-1 ring-foreground/[0.05]">
+    <div className="inline-flex max-w-full flex-wrap items-center gap-1 rounded-xl bg-muted/60 p-1 ring-1 ring-foreground/[0.05]">
       {ITEMS.map((item) => {
         const active = pathname.startsWith(item.href);
         const Icon = item.icon;

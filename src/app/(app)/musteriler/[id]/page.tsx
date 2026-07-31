@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Layers, TrendingDown, Clock, Building2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
 import { getCustomerDetail } from "@/lib/customers/detail";
 import { getInfraEntries } from "@/lib/infra/queries";
 import { getInfraTypes } from "@/lib/infra/type-queries";
@@ -12,6 +11,7 @@ import { CustomerDialog } from "../customer-dialog";
 import { DeleteCustomerAction } from "./delete-customer";
 import { StatusBadge } from "@/components/status-badge";
 import type { InfraEntry } from "@/lib/infra/types";
+import { requirePage } from "@/lib/auth/access";
 
 export default async function CustomerDetailPage({
   params,
@@ -22,17 +22,9 @@ export default async function CustomerDetailPage({
   const detail = await getCustomerDetail(id);
   if (!detail) notFound();
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user!.id)
-    .single();
-  const role = profile?.role ?? "viewer";
-  const canEdit = role === "admin" || role === "editor";
+  const access = await requirePage("musteriler");
+  const role = access.role;
+  const canEdit = access.canEdit;
   const showInfra = canEdit;
 
   const [customerDefs, trackDefs, versionDefs, infraDefs, infraTypes] =

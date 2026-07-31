@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
 import { getInfraTypes } from "@/lib/infra/type-queries";
 import { PageHeader } from "@/components/page-header";
@@ -10,26 +8,20 @@ import {
   type InfraGroup,
 } from "./field-admin-tabs";
 import type { FieldDefinition } from "@/lib/fields/types";
+import { requirePage } from "@/lib/auth/access";
 
 export default async function FieldAdminPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user!.id)
-    .single();
-  if (profile?.role !== "admin") redirect("/");
+  await requirePage("yonetim");
 
-  const [customer, track, version, infraDefs, infraTypes] = await Promise.all([
-    getFieldDefinitions("customer"),
-    getFieldDefinitions("track"),
-    getFieldDefinitions("version"),
-    getFieldDefinitions("infra"),
-    getInfraTypes(),
-  ]);
+  const [customer, track, version, event, infraDefs, infraTypes] =
+    await Promise.all([
+      getFieldDefinitions("customer"),
+      getFieldDefinitions("track"),
+      getFieldDefinitions("version"),
+      getFieldDefinitions("event"),
+      getFieldDefinitions("infra"),
+      getInfraTypes(),
+    ]);
 
   const flat: FlatGroup[] = [
     {
@@ -50,6 +42,12 @@ export default async function FieldAdminPage() {
       description:
         "Sürüm kayıtlarındaki bileşenler ve ek özellikler (var/yok).",
       defs: version,
+    },
+    {
+      entity: "event",
+      label: "Etkinlikler",
+      description: "Takvim etkinliklerine eklenen özel alanlar.",
+      defs: event,
     },
   ];
 

@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { userTier, type ManagedUser, type Tier } from "@/lib/users/guards";
+import { visiblePages } from "@/lib/auth/pages";
 
 type Props = {
   users: ManagedUser[];
@@ -29,13 +30,14 @@ export function UserTable({ users, currentUserId, isSuperadmin }: Props) {
             <TableHead className="pr-4 pl-20">Ad Soyad</TableHead>
             <TableHead className="px-4">E-posta</TableHead>
             <TableHead className="px-4">Rol</TableHead>
+            <TableHead className="px-4">Sayfalar</TableHead>
             <TableHead className="px-4">Eklenme</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {users.length === 0 ? (
             <TableRow className="hover:bg-transparent">
-              <TableCell colSpan={4} className="p-0">
+              <TableCell colSpan={5} className="p-0">
                 <EmptyState
                   icon={Users}
                   title="Kullanıcı yok"
@@ -54,6 +56,7 @@ export function UserTable({ users, currentUserId, isSuperadmin }: Props) {
                       <UserDialog
                         user={user}
                         isSuperadmin={isSuperadmin}
+                        currentUserId={currentUserId}
                         trigger={
                           <button
                             type="button"
@@ -90,6 +93,9 @@ export function UserTable({ users, currentUserId, isSuperadmin }: Props) {
                   <TableCell className="px-4 py-3">
                     <TierBadge tier={userTier(user)} />
                   </TableCell>
+                  <TableCell className="px-4 py-3 text-sm">
+                    <PageSummary user={user} />
+                  </TableCell>
                   <TableCell className="px-4 py-3 text-sm tabular-nums text-muted-foreground">
                     {user.created_at.slice(0, 10)}
                   </TableCell>
@@ -100,6 +106,35 @@ export function UserTable({ users, currentUserId, isSuperadmin }: Props) {
         </TableBody>
       </Table>
     </div>
+  );
+}
+
+/** Sayfa erisimi ozeti: kisitlama yoksa "Tümü", varsa sayfa adlari. */
+function PageSummary({ user }: { user: ManagedUser }) {
+  const pages = visiblePages({
+    role: user.role,
+    isSuperadmin: user.is_superadmin,
+    pageAccess: user.page_access,
+  });
+  if (user.is_superadmin || user.page_access === null) {
+    return <span className="text-muted-foreground">Tümü</span>;
+  }
+  if (pages.length === 0) {
+    return (
+      <span style={{ color: "var(--accent-amber)" }}>Sayfa yok</span>
+    );
+  }
+  return (
+    <span className="flex flex-wrap gap-1">
+      {pages.map((page) => (
+        <span
+          key={page.key}
+          className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+        >
+          {page.label}
+        </span>
+      ))}
+    </span>
   );
 }
 

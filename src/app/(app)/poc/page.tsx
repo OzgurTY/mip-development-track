@@ -3,21 +3,18 @@ import { getPocList } from "@/lib/poc/queries";
 import { PageHeader } from "@/components/page-header";
 import { PocBoard } from "./poc-board";
 import { PocCreate } from "./poc-create";
+import { requirePage } from "@/lib/auth/access";
 
 export default async function PocPage() {
+  const access = await requirePage("poc");
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  const [rows, customersResult, profileResult] = await Promise.all([
+  const [rows, customersResult] = await Promise.all([
     getPocList(),
     supabase.from("customers").select("id, name").order("name"),
-    supabase.from("profiles").select("role").eq("id", user!.id).single(),
   ]);
 
-  const role = profileResult.data?.role ?? "viewer";
-  const canEdit = role === "admin" || role === "editor";
+  const canEdit = access.canEdit;
   const customers = customersResult.data ?? [];
   const done = rows.filter((r) => r.status === "Tamamlandı").length;
 

@@ -8,6 +8,7 @@ import {
   Clock,
   ChevronRight,
   PieChart as PieIcon,
+  CalendarDays,
 } from "lucide-react";
 import { getOverview } from "@/lib/dashboard/queries";
 import { StatTile } from "@/components/stat-tile";
@@ -18,6 +19,12 @@ import {
   ComponentBars,
   type Slice,
 } from "@/components/charts/dashboard-charts";
+import { requirePage } from "@/lib/auth/access";
+import { canSeePage } from "@/lib/auth/pages";
+import { getEvents } from "@/lib/events/queries";
+import { expandEvents } from "@/lib/events/expand";
+import { formatRangeTr, todayIso } from "@/lib/calendar/date";
+import { eventEnd, PENDING_STATUSES } from "@/lib/events/types";
 
 const STATUS_META: { key: string; color: string }[] = [
   { key: "Aktif", color: "var(--accent-emerald)" },
@@ -28,6 +35,24 @@ const STATUS_META: { key: string; color: string }[] = [
 ];
 
 export default async function DashboardPage() {
+  const access = await requirePage("genel");
+  const showCalendar = canSeePage(access, "takvim");
+  const today = todayIso();
+
+  // Takvim erisimi olmayan kullaniciya etkinlik karti gosterilmez.
+  const calendarEvents = showCalendar
+    ? expandEvents(await getEvents(), {
+        from: today,
+        to: `${Number(today.slice(0, 4)) + 2}-12-31`,
+      })
+    : [];
+  const upcomingEvents = calendarEvents
+    .filter((event) => eventEnd(event) >= today && event.status !== "iptal")
+    .slice(0, 5);
+  const pendingEvents = calendarEvents.filter(
+    (event) => PENDING_STATUSES.includes(event.status) && eventEnd(event) >= today,
+  ).length;
+
   const { counts, mostBehind, attention, recent, components, versionCount } =
     await getOverview();
 
@@ -192,6 +217,45 @@ export default async function DashboardPage() {
           )}
         </BentoCard>
       </div>
+
+      {showCalendar ? (
+        <BentoCard
+          title="Yaklaşan etkinlikler"
+          icon={CalendarDays}
+          hover
+          className="animate-in fade-in slide-in-from-bottom-2 duration-500"
+          action={
+            <Link
+              href="/takvim"
+              className="press text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {pendingEvents > 0
+                ? `${pendingEvents} karar bekliyor`
+                : "Takvime git"}
+            </Link>
+          }
+          bodyClassName="grid gap-1 sm:grid-cols-2"
+        >
+          {upcomingEvents.length === 0 ? (
+            <Empty>Yaklaşan etkinlik yok.</Empty>
+          ) : (
+            upcomingEvents.map((event) => (
+              <Row key={event.occurrenceKey} href={`/takvim/${event.id}`}>
+                <span className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium">
+                  <span
+                    className="size-2 shrink-0 rounded-full"
+                    style={{ background: event.typeColor }}
+                  />
+                  <span className="truncate">{event.title}</span>
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {formatRangeTr(event.start_date, event.end_date)}
+                </span>
+              </Row>
+            ))
+          )}
+        </BentoCard>
+      ) : null}
 
       <BentoCard
         title="Dikkat isteyen müşteriler"

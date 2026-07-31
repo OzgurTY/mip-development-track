@@ -1,3 +1,4 @@
+import type { PageKey } from "@/lib/auth/pages";
 import type { Role } from "@/lib/auth/roles";
 
 export type ManagedUser = {
@@ -6,6 +7,8 @@ export type ManagedUser = {
   full_name: string | null;
   role: Role;
   is_superadmin: boolean;
+  /** null = rolunun izin verdigi tum sayfalar. */
+  page_access: PageKey[] | null;
   created_at: string;
 };
 
@@ -98,6 +101,27 @@ export function checkTierChange(
     if (countAdminLevel(users) <= 1) {
       return { ok: false, error: "Son yöneticinin rolü düşürülemez." };
     }
+  }
+  return { ok: true };
+}
+
+/**
+ * Sayfa erisimi yalnizca baskasi icin degistirilebilir ve super yonetici
+ * kisitlanamaz; ikisi de kendini kilitleyip kalmaya karsi koruma.
+ */
+export function checkPageAccessChange(
+  currentUserId: string,
+  targetId: string,
+  target: Pick<ManagedUser, "is_superadmin">,
+): GuardResult {
+  if (targetId === currentUserId) {
+    return { ok: false, error: "Kendi sayfa erişiminizi değiştiremezsiniz." };
+  }
+  if (target.is_superadmin) {
+    return {
+      ok: false,
+      error: "Süper yöneticinin sayfa erişimi kısıtlanamaz.",
+    };
   }
   return { ok: true };
 }

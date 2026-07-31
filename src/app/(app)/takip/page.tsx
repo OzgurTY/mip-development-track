@@ -1,25 +1,21 @@
 import Link from "next/link";
 import { CalendarCheck } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
 import { getFieldDefinitions } from "@/lib/fields/queries";
 import { getTrackBoard } from "@/lib/track/queries";
 import { PageHeader } from "@/components/page-header";
 import { TrackBoard } from "./track-board";
 import { ExportControl } from "./export-control";
 import { buttonVariants } from "@/components/ui/button";
+import { requirePage } from "@/lib/auth/access";
 
 export default async function TrackPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const access = await requirePage("takip");
 
-  const [rows, profileResult, defs] = await Promise.all([
+  const [rows, defs] = await Promise.all([
     getTrackBoard(),
-    supabase.from("profiles").select("role").eq("id", user!.id).single(),
     getFieldDefinitions("track"),
   ]);
-  const canEdit = ["editor", "admin"].includes(profileResult.data?.role ?? "");
+  const canEdit = access.canEdit;
 
   return (
     <div className="space-y-6">

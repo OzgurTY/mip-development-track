@@ -16,9 +16,16 @@ const STATUS_COLOR: Record<string, string> = {
   Karşılandı: "var(--accent-emerald)",
   Karşılanmadı: "var(--accent-rose)",
   Bekliyor: "var(--muted-foreground)",
+
+  // Etkinlik durumlari.
+  Aday: "var(--muted-foreground)",
+  Değerlendiriliyor: "var(--accent-amber)",
+  Onaylandı: "var(--accent-indigo)",
+  Bilgi: "var(--muted-foreground)",
 };
 
-function tint(color: string): React.CSSProperties {
+/** Renk tonlu rozet zemini: etkinlik tipi cipleri de bunu kullanir. */
+export function tint(color: string): React.CSSProperties {
   return {
     background: `color-mix(in oklch, ${color} 14%, transparent)`,
     boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${color} 32%, transparent)`,
